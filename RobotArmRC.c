@@ -43,6 +43,8 @@ task main()
 
 	//Declare Variables
 	int QUANTITY;//first line from input file
+	int pointer=0;
+	int cnt=0;
 	Point coor[MAX];
 	Angle angle[MAX];
 	//---READY---//
@@ -50,9 +52,13 @@ task main()
 
 
 	//ReadFile && Assign 20 coordinates
+	pointer=0;
 	for(int i=0;i<MAX;i++){
 		if(!readNextPoint(coor[i])){
 			i--;//skip this point
+		}else{
+			pointer++;
+			cnt++;
 		}
 	}
 	//Manipulating class - MASSAGE IT!!!
