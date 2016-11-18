@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RBCVersion>1.0.1</RBCVersion>
+
+<Platform>NXT</Platform>
+
+<CompilerMode>Real</CompilerMode>
+
+<MenuLevel>Basic</MenuLevel>
+
+<CompileAndDownload>NO</CompileAndDownload>
+
+<SourceFileName>NewProgram.c</SourceFileName>
+
+<NaturalLanguageFlag>False</NaturalLanguageFlag>
+
+<ExternalControllersFlag>FALSE</ExternalControllersFlag>
+
+<DebuggerWindows></DebuggerWindows>
+
+<SourceCode>#include "NXTServo-lib-UW.c"
+const int Joint2=1;
+const int Joint3=2;
+const int Gripper=3;
+const int SServo=S4;
+
+task main()
+{
+	SensorType[S4] = sensorI2CCustom9V;
+	for(int i=0;i&lt;10;i++){
+	//setServoPosition(S4,Joint2,-60);
+	setServoPosition(S4,Joint3,-90);
+	setGripperPosition(S4,Gripper,40);
+	wait1Msec(1000);
+ }
+
+}
+</SourceCode>
