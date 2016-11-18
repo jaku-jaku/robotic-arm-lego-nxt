@@ -20,7 +20,6 @@ typedef struct
 	float t;
 } AngleSet;
 
-float atan2(float x, float y);
 void calcAngleSet(Point& input, AngleSet& output);
 bool isPointValid(Point& input) const;
 
