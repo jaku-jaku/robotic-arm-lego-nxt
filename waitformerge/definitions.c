@@ -2,13 +2,34 @@
 #include "definitions.h"
 
 
+float atan2(float y, float x)
+{
+	// Author: Dustin Hu
+	// Date: November 17th, 2016
+	// Purpose: RobotC does not have atan2() implemented.
+	// Algorithm taken from Wikipedia's article on atan2
+	// https://en.wikipedia.org/wiki/Atan2
+	float output = 0;
+	if (x > 0)
+		output = atan(y/ x);
+	else if (y > 0)
+		output = (PI/2.0) - atan(x/y);
+	else if (y < 0)
+		output = -1 * (PI/2.0);
+	else if (x < 0)
+		output = arctan (y/x) + PI;
+	else 
+		output = NaN
+	return output;
+}	
 
 void calcAngleSet(Point& input, AngleSet& output)
 {
 	if (isPointValid(input))
 	{
 		float L = calcL(input);
-		
+		theta = calcTheta(input);
+
 	}
 
 }
@@ -32,4 +53,20 @@ float calcL(Point& input) const
 	return sqrt(input.x * input.x + input.y * input.y);
 }
 
-float 
+float calcTheta(Point& input) const
+{
+	// Author: Dusti nHu
+	// Date: November 17th, 2016
+	// Purpose: to calculate the theta (Base angle) of the point
+	return atan2(input.y, input.z);
+}
+
+float calcAlpha(Point& input, float L) const
+{
+
+}
+
+float calcAlpha1(Point& input) const
+{
+	return atan2(input.z, input.x);
+}
