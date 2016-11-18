@@ -25,6 +25,11 @@ float atan2(float y, float x)
 
 void calcAngleSet(Point& input, AngleSet& output)
 {
+	// Author: Dustin Hu
+	// Date: November 17th, 2016
+	// Purpose: To calculate the set of angles
+	// Disclaimer: I have done a similar project
+	// where I had to calculate the angles of a limb before
 	if (isPointValid(input))
 	{
 		float L = calcL(input);
@@ -63,10 +68,25 @@ float calcTheta(Point& input) const
 
 float calcAlpha(Point& input, float L) const
 {
-
+	float alpha = calcAlpha1(input) + calcAlpha2(input, L);
 }
 
 float calcAlpha1(Point& input) const
 {
+	// Author: Dustin Hu
+	// Date: November 17th, 2016
+	// Purpose: to calculate alpha1
 	return atan2(input.z, input.x);
+}
+
+
+float calcAlpha2(Point& input, float L) const
+{
+	// Author: Dustin Hu
+	// Date: November 17th, 2016
+	// Purpose: Calculate alpha2 using cosine law
+
+	float numerator = FOREARM * FOREARM - SHOULDER * SHOULDER - L * L;
+	float denominator = -2.0 * SHOULDER * L;
+	return acos(numerator/denominator);
 }

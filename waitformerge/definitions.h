@@ -1,8 +1,8 @@
 
 
-const int SHOULDER;
-const int FOREARM;
-const int Z_OFFSET;
+const int SHOULDER; // First length, from J2-J3
+const int FOREARM; // Second length, from J3-End
+const int Z_OFFSET; // J1-J3 height
 
 typedef struct
 {
@@ -26,6 +26,9 @@ bool isPointValid(Point& input) const;
 
 float calcL(Point& input) const;
 float calcTheta(Point& input) const;
+float calcAlpha(Point& input) const;
+float calcAlpha1(Point& input) const;
+float calcAlpha2(Point& input, float L) const;
 
 float calcBeta(Point& input, float L) const;
 float calcAlpha(Point& input, float L) const;
