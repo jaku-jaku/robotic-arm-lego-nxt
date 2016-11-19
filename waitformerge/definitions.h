@@ -35,7 +35,6 @@ float calcAlpha(Point& input, float L);
 float calcAlpha1(Point& input);
 float calcAlpha2(Point& input, float L);
 float calcBeta(Point& input, float L);
-float calcAlpha(Point& input, float L);
 
 bool isXValid(Point& input);
 bool isYValid(Point& input);

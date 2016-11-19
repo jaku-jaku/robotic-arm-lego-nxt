@@ -1,7 +1,18 @@
-
+#include "NXTServo-lib-UW.c"
 #include "definitions.h"
 
-
+task main()
+{
+	SensorType[S4] = sensorI2CCustom9V;
+	Point a;
+	AngleSet b;
+	a.x = 100;
+	a.y = 100;
+	a.z = 100;
+	calcAngleSet(a, b);
+	displayString(0, "%f , %f", MIN_Z, MIN_X);
+	wait1Msec(100000);
+}
 
 
 void calcAngleSet(Point& input, AngleSet& output)
@@ -11,13 +22,13 @@ void calcAngleSet(Point& input, AngleSet& output)
 	// Purpose: To calculate the set of angles
 	// Disclaimer: I have done a similar project
 	// where I had to calculate the angles of a limb before
-	if (isPointValid(input))
-	{
 		float L = calcL(input);
-		float theta = calcTheta(input);
-
-	}
-
+		float alpha = radiansToDegrees(calcAlpha(input, L));
+		float beta = radiansToDegrees(calcBeta(input, L));
+		displayString(1, "%f", alpha);
+		displayString(2, "%f", beta);
+		setServoPosition(S4, 1, (2 * (alpha - 30)));
+		setServoPosition(S4, 2, (2 * beta - 90));
 }
 
 bool isPointValid(Point& input)
@@ -36,7 +47,7 @@ float calcL(Point& input)
 	// Date: November 17th, 2016
 	// Purpose: To calculate the length of the line
 	// Connecting the end effector and the base
-	return sqrt(input.x * input.x + input.y * input.y);
+	return sqrt(input.x * input.x + input.z * input.z);
 }
 
 float calcTheta(Point& input)
