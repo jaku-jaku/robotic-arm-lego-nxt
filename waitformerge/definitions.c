@@ -191,3 +191,70 @@ float radToDeg(float rad)
 {
 	return rad * (180.0/PI);
 }
+
+int getECValue()
+{
+	return nMotorEncoder[J1];
+}
+
+int getDistance()
+{
+	return SensorValue[S_ULTRA];
+}
+
+float angleToEC(float angle)
+{
+	return angle * FULL_ROTATION_EC_VALUE - getECValue();
+}
+
+void zeroECValue()
+{
+	nmotorEncoder[J1] = 0;
+}
+
+void rotate(bool clockwise, int power)
+{
+	if (!clockwise)
+		power = -1 * power;
+	motor[J1] = power;
+}
+
+void moveToTarget(int targetEC, int tolerance)
+{
+	int moveSpeed = 75;
+	// PD & Sigmoidy here
+	bool cw = true;
+	if (targetEC > FULL_ROTATION_EC_VALUE/2.0)
+	{
+		cw= false;
+		targetEC = FULL_ROTATION_EC_VALUE/2.0	- targetEC;
+	}
+	rotate(cw, moveSpeed);
+	
+	while ((fabs(getECValue()) - fabs(targetEC)) <= tolerance);
+	
+	rotate(false, 0);
+}
+
+void zeroZAxis()
+{
+	float minDist = 255;
+	int targetEC = 0;
+	int tolerance = 0;
+	int power = 40;
+	
+	zeroECValue();
+	rotate (true, power);
+	while (getECValue() <= FULL_ROTATION_EC_VALUE)
+	{
+		if (getDistance() < minDist)
+		{
+			minDist = getDistance();
+			targetEC = getECValue();
+		}	
+	}
+	rotate (true, 0);
+	zeroECValue();
+	moveToTarget(targetEC, tolerance);
+	zeroECValue();	
+}
