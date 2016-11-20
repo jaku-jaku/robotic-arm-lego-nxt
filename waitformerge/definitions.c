@@ -174,6 +174,19 @@ void moveJ2(AngleSet& input)
 	// It is assumed that the angleSet is valid
 	setServoPosition(S4, 1, 0.0333 * input.alpha * input.alpha - 3 * input.alpha - 30 );
 }
+void moveJ3(AngleSet& input)
+{
+	// Author: Dustin Hu
+// date: November 20, 2016
+// Purpose: To move the 3rd joint
+// It is assumed that the angle set is valid
+	setServoPosition(S4, 2, -0.00001 * pow(input.beta, 3)
+				-0.0015 * input.beta * input.beta
+				+ 0.9472 * input.beta 
+				+ 25);
+															
+}
+
 float radToDeg(float rad)
 {
 	return rad * (180.0/PI);
