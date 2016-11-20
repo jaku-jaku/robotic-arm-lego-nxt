@@ -40,5 +40,6 @@ bool isBetaValid(float beta);
 bool areAnglesValid(float alpha, float beta);
 
 void moveJ2(AngleSet& input);
+void moveJ3(AngleSet& input);
 
 float radToDeg(float rad);
