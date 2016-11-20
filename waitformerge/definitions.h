@@ -26,7 +26,7 @@ typedef struct
 	float t;
 } AngleSet;
 
-void calcAngleSet(Point& input, AngleSet& output);
+bool calcAngleSet(Point& input, AngleSet& outputAngles);
 
 float calcL(Point& input);
 float calcTheta(Point& input);
@@ -36,6 +36,9 @@ float calcAlpha2(Point& input, float L);
 float calcBeta(Point& input, float L);
 
 bool isAlphaValid(float alpha);
-bool isBetaValiD(float beta);
-bool areAnglesValid(Angleset& input);
+bool isBetaValid(float beta);
+bool areAnglesValid(float alpha, float beta);
+
+void moveJ2(AngleSet& input);
+
 float radToDeg(float rad);

@@ -6,11 +6,14 @@ task main()
 	SensorType[S4] = sensorI2CCustom9V;
 	Point a;
 	AngleSet b;
-	a.x = 100;
+	AngleSet c;
+	c.alpha = 120;
+	a.x = 200;
 	a.y = 100;
-	a.z = 300;
-
+	a.z = 100;
 	calcAngleSet(a, b);
+	displayString(1, "%.2f", b.alpha);
+	moveJ2(b);
 	/*
 	(-90, 39)
 	(-20, 1)
@@ -18,12 +21,11 @@ task main()
 	(90, 60)
 
 	*/
-	displayString(0, "%f , %f", MIN_Z, MIN_X);
 	wait1Msec(100000);
 }
 
 
-bool calcAngleSet(Point& input, AngleSet& output)
+bool calcAngleSet(Point& input, AngleSet& outputAngles)
 {
 	// Author: Dustin Hu
 	// Date: November 17th, 2016
@@ -43,9 +45,9 @@ bool calcAngleSet(Point& input, AngleSet& output)
 	if (areAnglesValid(alpha, beta))
 	{
 		output = true;
-		output.alpha = alpha;
-		output.beta = beta;
-		output.theta = theta;
+		outputAngles.alpha = radToDeg(alpha);
+		outputAngles.beta = radToDeg(beta);
+		outputAngles.theta = radToDeg(theta);
 	}
 	return output;
 }
@@ -163,6 +165,15 @@ bool areAnglesValid(float alpha, float beta)
 	return output;
 }
 
+void moveJ2(AngleSet& input)
+{
+	// Author: Dustin Hu
+// Date: November 20th, 2016
+// Purpose: To move the second joint to the desired angle
+// Input: The angle set to move to
+	// It is assumed that the angleSet is valid
+	setServoPosition(S4, 1, 0.0333 * input.alpha * input.alpha - 3 * input.alpha - 30 );
+}
 float radToDeg(float rad)
 {
 	return rad * (180.0/PI);
