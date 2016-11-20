@@ -64,3 +64,6 @@ void zeroECValue();
 void rotate(bool clockwise, int power);
 void moveToTarget(int targetEC, int tolerance);
 void zeroZAxis();
+
+// Ali Toyserkani
+bool isPointValid(Point& p);
