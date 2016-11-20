@@ -1,5 +1,5 @@
 
-
+// DO NOT USE RADIANSTODEGREES. IT CONVERTS IT TO A SHORT.
 const int SHOULDER = 157; // First length, from J2-J3 in mm
 const int FOREARM = 197; // Second length, from J3-End in mm
 const int Z_OFFSET = 112; // J1-J3 height in mm
@@ -27,7 +27,6 @@ typedef struct
 } AngleSet;
 
 void calcAngleSet(Point& input, AngleSet& output);
-bool isPointValid(Point& input);
 
 float calcL(Point& input);
 float calcTheta(Point& input);
@@ -36,7 +35,7 @@ float calcAlpha1(Point& input);
 float calcAlpha2(Point& input, float L);
 float calcBeta(Point& input, float L);
 
-bool isXValid(Point& input);
-bool isYValid(Point& input);
-
 bool isAlphaValid(float alpha);
+bool isBetaValiD(float beta);
+bool areAnglesValid(Angleset& input);
+float radToDeg(float rad);
