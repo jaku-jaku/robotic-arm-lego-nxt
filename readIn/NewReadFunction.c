@@ -6,28 +6,35 @@ typedef struct {
 	bool isValid;
 } Point;
 
-const int L1 = 155;
-const int L2 = 155;
+const int L1 = 157;
+const int L2 = 197;
 
+// Check 
 bool isPointValid(Point p)
 {
-	float distBetween;
-	float pytho = sqrt(p.x*p.x + p.y*p.y);
+	//Ali Toyserkani Nov 20
+	//Addition still needed, account for hitting itself within middle bound!!!!!!
+
+	float distJ3ToPoint;
+	float distBetween = sqrt(pow(p.x,2)+pow(p.y,2)+pow(p.z,2));
+	float pythoXY = sqrt(p.x*p.x + p.y*p.y);
+	float pythoL1L2 = sqrt(L1*L1 + L2*L2);
 	bool isOk = false;
 	if (p.z > (-(L1+L2)*sin(PI/6.0)) && p.z < (L1+L2)*cos(PI/6.0))
 	{
-		distBetween = sqrt(pow(p.x,2)+pow(p.y,2)+pow(p.z,2));
-		if (distBetween > L1 && distBetween < (L1+L2))
+		//distBetween = sqrt(pow(p.x,2)+pow(p.y,2)+pow(p.z,2));
+		if (distBetween > pythoL1L2 && distBetween < (L1+L2))
 		{
 			isOk = true;
 		}
 	}
 	else if (p.z < (-(L1+L2)*sin(PI/6.0)))
 	{
-		distBetween = sqrt(pow(pytho-L1*cos(PI/6.0),2)+ pow(p.z-sin(PI/6.0),2));
+		distJ3ToPoint = sqrt(pow(pythoXY-L1*cos(PI/6.0),2)+ pow(p.z-sin(PI/6.0),2));
+		
 		if ((p.x >= 0 && p.x-L1*cos(PI/6.0) >= 0) || (p.x < 0 && p.x-L1*cos(PI/6.0) < 0))
 		{
-			if (distBetween < L2)
+			if (distBetween > pythoL1L2 && distJ2ToPoint < L2)
 			{
 				isOk = true;
 			}
@@ -36,10 +43,11 @@ bool isPointValid(Point p)
 	else if (p.z > (L1+L2)*cos(PI/6.0))
 	{
 		
-		distBetween = sqrt(pow(pytho-L1*sin(PI/6.0),2)+ pow(p.z-cos(PI/6.0),2));
+		distJ3ToPoint = sqrt(pow(pythoXY-L1*sin(PI/6.0),2)+ pow(p.z-cos(PI/6.0),2));
+		
 		if ((p.x >= 0 && p.x-L1*sin(PI/6.0) >= 0) || (p.x < 0 && p.x-L1*sin(PI/6.0) < 0))
 		{
-			if (distBetween < L2)
+			if (distBetween > pythoL1L2 && distJ2ToPoint < L2)
 			{
 				isOk = true;
 			}
@@ -78,7 +86,5 @@ task main()
 	}
 
 	closeFilePC(fin);
-
-
 
 }
