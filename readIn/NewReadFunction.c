@@ -13,7 +13,7 @@ const int L2 = 197;
 // (p.x >= 0 && p.x-L1*cos(PI/6.0) >= 0) || (p.x < 0 && p.x-L1*cos(PI/6.0) < 0)
 // (p.x >= 0 && p.x-L1*sin(PI/6.0) >= 0) || (p.x < 0 && p.x-L1*sin(PI/6.0) < 0) greater than upper bound check
 
-bool isUpperOrLowerInRange(bool isAbove, float x, ) {
+bool isUpperOrLowerInRange(bool isAbove, float x) {
 
 	bool isInRange = false;
 	if (isAbove)
