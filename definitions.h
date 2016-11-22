@@ -74,3 +74,8 @@ void gripperController(int angle);
 bool isUpperOrLowerInRange(bool isAbove, float x);
 bool isPointValid(Point& p);
 void readPoint(TFileHandle & fin, Point p);
+
+//
+float calcMaximumBeta(AngleSet& input);
+float calcDist(Point& input);
+float cosineLawAngle(float dist);

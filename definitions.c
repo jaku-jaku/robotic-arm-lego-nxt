@@ -40,16 +40,21 @@ bool calcAngleSet(Point& input, AngleSet& outputAngles)
 	// where I had to calculate the angles of a limb before
 	bool output = false;
 	float L = calcL(input);
+	float newX = sqrt(input.x * input.x +
 	float alpha = calcAlpha(input, L);
 	float beta = calcBeta(input, L);
 	float theta = calcTheta(input);
-	if (areAnglesValid(alpha, beta))
-	{
-		output = true;
-		outputAngles.alpha = radToDeg(alpha);
-		outputAngles.beta = radToDeg(beta);
-		outputAngles.theta = radToDeg(theta);
-	}
+	output = true;
+	outputAngles.alpha = radToDeg(alpha);
+	outputAngles.beta = radToDeg(beta);
+	outputAngles.theta = radToDeg(theta);
+	//if (areAnglesValid(alpha, beta))
+	//{
+	//	output = true;
+	//	outputAngles.alpha = radToDeg(alpha);
+	//	outputAngles.beta = radToDeg(beta);
+	//	outputAngles.theta = radToDeg(theta);
+	//}
 	return output;
 }
 
@@ -383,4 +388,24 @@ void readPoint(TFileHandle & fin, Point p) {
 	bool currPointValid = isPointValid(p);
 	//bool currPointValid=true;
 	p.isValid = currPointValid;
+}
+
+float calcMaximumBeta(AngleSet& input)
+{
+	float output = 30;
+	if ((180 - input.alpha) < 30)
+	{
+		output = 180 - input.alpha;
+	}
+	return output;
+}
+
+float calcDist(Point& input)
+{
+	return sqrt(input.x * input.x + input.y * input.y);
+}
+
+float cosineLawAngle(float dist)
+{
+	return acos((dist * dist - SHOULDER * SHOULDER - FOREARM * FOREARM)/(-2.0 * FOREARM * SHOULDER));
 }
