@@ -1,28 +1,29 @@
 #include "NXTServo-lib-UW.c"
+#include "NXT_FileIO.c"
 #include "definitions.h"
 
-task main()
-{
-	SensorType[S4] = sensorI2CCustom9V;
-	Point a;
-	AngleSet b;
-	AngleSet c;
-	c.alpha = 120;
-	a.x = 200;
-	a.y = 100;
-	a.z = 100;
-	calcAngleSet(a, b);
-	displayString(1, "%.2f", b.alpha);
-	moveJ2(b);
-	/*
-	(-90, 39)
-	(-20, 1)
-	(45, 46)
-	(90, 60)
+//task main()
+//{
+//	SensorType[S4] = sensorI2CCustom9V;
+//	Point a;
+//	AngleSet b;
+//	AngleSet c;
+//	c.alpha = 120;
+//	a.x = 200;
+//	a.y = 100;
+//	a.z = 100;
+//	calcAngleSet(a, b);
+//	displayString(1, "%.2f", b.alpha);
+//	moveJ2(b);
+//	/*
+//	(-90, 39)
+//	(-20, 1)
+//	(45, 46)
+//	(90, 60)
 
-	*/
-	wait1Msec(100000);
-}
+//	*/
+//	wait1Msec(100000);
+//}
 
 
 bool calcAngleSet(Point& input, AngleSet& outputAngles)
@@ -38,7 +39,7 @@ bool calcAngleSet(Point& input, AngleSet& outputAngles)
 	// Disclaimer: I have done a similar project
 	// where I had to calculate the angles of a limb before
 	bool output = false;
-	float L = calcL(input)
+	float L = calcL(input);
 	float alpha = calcAlpha(input, L);
 	float beta = calcBeta(input, L);
 	float theta = calcTheta(input);
@@ -68,7 +69,7 @@ float calcTheta(Point& input)
 	// Author: Dusti nHu
 	// Date: November 17th, 2016
 	// Purpose: to calculate the theta (Base angle) of the point
-	return atan2(input.y, input.z);
+	return atan2(input.z, input.y);
 }
 
 float calcAlpha(Point& input, float L)
@@ -182,9 +183,9 @@ void moveJ3(AngleSet& input)
 // It is assumed that the angle set is valid
 	setServoPosition(S4, 2, -0.00001 * pow(input.beta, 3)
 				-0.0015 * input.beta * input.beta
-				+ 0.9472 * input.beta 
+				+ 0.9472 * input.beta
 				+ 25);
-															
+
 }
 
 float radToDeg(float rad)
@@ -222,7 +223,7 @@ void rotate(bool clockwise, int power)
 void moveToTarget(int targetEC, int tolerance)
 {
 	int moveSpeed = 75;
-	// PD & Sigmoidy here
+	// PD & Sigmoid here
 	bool cw = true;
 	if (targetEC > FULL_ROTATION_EC_VALUE/2.0)
 	{
@@ -230,70 +231,156 @@ void moveToTarget(int targetEC, int tolerance)
 		targetEC = FULL_ROTATION_EC_VALUE/2.0	- targetEC;
 	}
 	rotate(cw, moveSpeed);
-	
+
+	//while ((fabs(getECValue()) - fabs(targetEC)) <= tolerance);
+	//rotate(false, 0);
+	//rotate (!cw,moveSpeed/2);
 	while ((fabs(getECValue()) - fabs(targetEC)) <= tolerance);
-	
 	rotate(false, 0);
 }
-
 void zeroZAxis()
 {
 	float minDist = 255;
 	int targetEC = 0;
 	int tolerance = 0;
 	int power = 40;
-	
+	int currentEC = 0;
+	int distSum = 0;
+	int distAvg = 0;
+
 	zeroECValue();
 	rotate (true, power);
 	while (getECValue() <= FULL_ROTATION_EC_VALUE)
 	{
-		if (getDistance() < minDist)
-		{
-			minDist = getDistance();
-			targetEC = getECValue();
-		}	
+		distSum = 0;
+		currentEC = getECValue();
+		int n = 1;
+		//Calculates avg. of distances it reads on the span of 1 EC
+		//This minimizes the error in readings from the U.S. sensor
+		while (currentEC == getECValue ()){
+			distSum += getDistance();
+			n++;
+		}
+		distAvg = distSum*1.0/n;
+		if (distAvg < minDist)
+			{
+				minDist = distAvg;
+				targetEC = currentEC;
+			}
 	}
 	rotate (true, 0);
 	zeroECValue();
 	moveToTarget(targetEC, tolerance);
-	zeroECValue();	
+	zeroECValue();
 }
 
+void gripperController(int angle){	//0 closed, 180 open
+	if (angle>=0||angle<=180)
+		setServoPosition (S_SERVO, GRIPPER, angle);
+}
+
+//void zeroZAxis()
+//{
+//	float minDist = 255;
+//	int targetEC = 0;
+//	int tolerance = 0;
+//	int power = 40;
+
+//	zeroECValue();
+//	rotate (true, power);
+//	while (getECValue() <= FULL_ROTATION_EC_VALUE)
+//	{
+//		if (getDistance() < minDist)
+//		{
+//			minDist = getDistance();
+//			targetEC = getECValue();
+//		}
+//	}
+//	rotate (true, 0);
+//	zeroECValue();
+//	moveToTarget(targetEC, tolerance);
+//	zeroECValue();
+//}
+
+//point validation
+bool isUpperOrLowerInRange(bool isAbove, float hyp, float x) {
+
+	bool isInRange = false;
+	if (isAbove)
+	{
+		if ((x >= 0 && hyp-SHOULDER*sin(PI/6.0) >= 0) || (x < 0 && hyp-SHOULDER*sin(PI/6.0) < 0))
+			isInRange = true;
+	}
+	else
+	{
+		if ((x >= 0 && hyp-SHOULDER*cos(PI/6.0) >= 0) || (x < 0 && hyp-SHOULDER*cos(PI/6.0) < 0))
+			isInRange = true;
+	}
+
+	return isInRange;
+
+
+}
 bool isPointValid(Point p)
 {
-	float distBetween;
-	float pytho = sqrt(p.x*p.x + p.y*p.y);
+	//Ali Toyserkani Nov 20
+	//Addition still needed, account for hitting itself within middle bound!!!!!!
+
+	const float lowerZBound = -(SHOULDER+FOREARM)*sin(PI/6.0);
+	const float upperZBound = (FOREARM+FOREARM)*cos(PI/6.0);
+
+	float distJ3ToPoint;
+	float distBetween = sqrt(pow(p.x,2)+pow(p.y,2)+pow(p.z,2));
+	float pythoXY = sqrt(p.x*p.x + p.y*p.y);
+	float pythoSHOULDERFOREARM = sqrt(SHOULDER*SHOULDER + FOREARM*FOREARM);
+
 	bool isOk = false;
-	if (p.z > (-(L1+L2)*sin(PI/6.0)) && p.z < (L1+L2)*cos(PI/6.0))
+
+	if (p.z > lowerZBound && p.z < upperZBound)
 	{
-		distBetween = sqrt(pow(p.x,2)+pow(p.y,2)+pow(p.z,2));
-		if (distBetween > L1 && distBetween < (L1+L2))
+		//distBetween = sqrt(pow(p.x,2)+pow(p.y,2)+pow(p.z,2));
+		if (distBetween > pythoSHOULDERFOREARM && distBetween < (SHOULDER+FOREARM))
 		{
 			isOk = true;
 		}
 	}
-	else if (p.z < (-(L1+L2)*sin(PI/6.0)))
+	else if (p.z < lowerZBound)
 	{
-		distBetween = sqrt(pow(pytho-L1*cos(PI/6.0),2)+ pow(p.z-sin(PI/6.0),2));
-		if ((p.x >= 0 && p.x-L1*cos(PI/6.0) >= 0) || (p.x < 0 && p.x-L1*cos(PI/6.0) < 0))
+		distJ3ToPoint = sqrt(pow(pythoXY-SHOULDER*cos(PI/6.0),2)+ pow(p.z-sin(PI/6.0),2));
+
+		if (isUpperOrLowerInRange(false,pythoXY, p.x))
 		{
-			if (distBetween < L2)
+			if (distBetween > pythoSHOULDERFOREARM && distJ3ToPoint < FOREARM)
 			{
 				isOk = true;
 			}
 		}
 	}
-	else if (p.z > (L1+L2)*cos(PI/6.0))
+	else if (p.z > upperZBound)
 	{
-		
-		distBetween = sqrt(pow(pytho-L1*sin(PI/6.0),2)+ pow(p.z-cos(PI/6.0),2));
-		if ((p.x >= 0 && p.x-L1*sin(PI/6.0) >= 0) || (p.x < 0 && p.x-L1*sin(PI/6.0) < 0))
+
+		distJ3ToPoint = sqrt(pow(pythoXY-SHOULDER*sin(PI/6.0),2)+ pow(p.z-cos(PI/6.0),2));
+
+		if (isUpperOrLowerInRange(true,pythoXY, p.x))
 		{
-			if (distBetween < L2)
+			if (distBetween > pythoSHOULDERFOREARM && distJ3ToPoint < FOREARM)
 			{
 				isOk = true;
 			}
 		}
 	}
 	return isOk;
+}
+
+//read point
+void readPoint(TFileHandle & fin, Point p) {
+
+	readFloatPC(fin, p.x);
+	readFloatPC(fin, p.y);
+	readFloatPC(fin, p.z);
+	readIntPC(fin, p.tMs);
+	readIntPC(fin, p.gP);
+	bool currPointValid = isPointValid(p);
+	//bool currPointValid=true;
+	p.isValid = currPointValid;
 }
