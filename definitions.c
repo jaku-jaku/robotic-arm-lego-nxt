@@ -29,6 +29,7 @@ bool calcAngleSet(Point& input, AngleSet& outputAngles)
 
 	displayString(0, "%.2f", outputAngles.alpha);
 	displayString(1, "%.2f", outputAngles.beta);
+	displayString(2, "%.2f", outputAngles.theta);
 	//if (areAnglesValid(alpha, beta))
 	//{
 	//	output = true;
@@ -55,7 +56,7 @@ float calcTheta(Point& input)
 	// Author: Dusti nHu
 	// Date: November 17th, 2016
 	// Purpose: to calculate the theta (Base angle) of the point
-	return atan2(input.z, input.y);
+	return atan2(input.y, input.x);
 }
 
 float calcAlpha(Point& input, float L, float newX)
@@ -169,10 +170,9 @@ void moveJ3(AngleSet& input)
 	// date: November 20, 2016
 	// Purpose: To move the 3rd joint
 	// It is assumed that the angle set is valid
-	setServoPosition(S4, 2, -0.00001 * pow(input.beta, 3)
-	-0.0015 * input.beta * input.beta
-	+ 0.9472 * input.beta
-	+ 25);
+	setServoPosition(S4, 2, -0.0007 * input.beta * input.beta
+													+ 0.9882 * input.beta
+													+21.773);
 
 }
 
@@ -226,10 +226,12 @@ void moveToTarget(int targetEC, int tolerance)
 	DIFF=angleDiff;
 	MAXspeed=(int)((MAXspeed-MINspeed)*DIFF*2.0/FULL_ROTATION_EC_VALUE/10.0)+MINspeed;
 	moveSpeed=30;
+	angleDiff = angleDiff;
 	//MAXspeed depends on the rotation difference
 	while (angleDiff!=0)
 	{
-		displayString(3,"%f",moveSpeed);
+		displayString(3, "%f", angleDiff);
+		//displayString(3,"%f",moveSpeed);
 		rotate(cw, moveSpeed);
 	  angleDiff=targetEC-getECValue();
 	}
