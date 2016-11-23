@@ -38,9 +38,11 @@ bool calcAngleSet(Point& input, AngleSet& outputAngles)
 	// will be valid
 	// Disclaimer: I have done a similar project
 	// where I had to calculate the angles of a limb before
+
 	bool output = false;
-	float L = calcL(input);
-	float alpha = calcAlpha(input, L);
+		float newX = sqrt(input.x * input.x + input.y * input.y);
+	float L = calcL(input, newX);
+	float alpha = calcAlpha(input, L, newX);
 	float beta = calcBeta(input, L);
 	float theta = calcTheta(input);
 	if (areAnglesValid(alpha, beta))
@@ -55,13 +57,13 @@ bool calcAngleSet(Point& input, AngleSet& outputAngles)
 
 
 
-float calcL(Point& input)
+float calcL(Point& input, float newX)
 {
 	// Author: Dustin Hu
 	// Date: November 17th, 2016
 	// Purpose: To calculate the length of the line
 	// Connecting the end effector and the origin (Check diagrams)
-	return sqrt(input.x * input.x + input.z * input.z);
+	return sqrt(newX * newX + input.z * input.z);
 }
 
 float calcTheta(Point& input)
@@ -72,19 +74,19 @@ float calcTheta(Point& input)
 	return atan2(input.z, input.y);
 }
 
-float calcAlpha(Point& input, float L)
+float calcAlpha(Point& input, float L, float newX)
 {
 	// Nov 17, 2016
 	// Dustin Hu
-	return calcAlpha1(input) + calcAlpha2(input, L);
+	return calcAlpha1(input, newX) + calcAlpha2(input, L);
 }
 
-float calcAlpha1(Point& input)
+float calcAlpha1(Point& input, float newX)
 {
 	// Author: Dustin Hu
 	// Date: November 17th, 2016
 	// Purpose: to calculate alpha1
-	return atan2(input.z, input.x);
+	return atan2(input.z, newX);
 }
 
 
@@ -410,4 +412,14 @@ void readPoint(TFileHandle & fin, Point p) {
 	bool currPointValid = isPointValid(p);
 	//bool currPointValid=true;
 	p.isValid = currPointValid;
+}
+
+float calcMaximumBeta(AngleSet& input)
+{
+	float output = 30;
+	if ((180 - input.alpha) < 30)
+	{
+		output = 180 - input.alpha;
+	}
+	return output;
 }
