@@ -13,8 +13,7 @@ task main()
 
 	zeroECValue();
 	calcAngleSet(a, b);
-	b.alpha = 0;
-	b.beta = -45;
+
 	//moveToTarget(b.theta*5, 3);
 	moveJ2(b);
 	moveJ3(b);

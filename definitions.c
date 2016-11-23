@@ -2,29 +2,6 @@
 #include "NXT_FileIO.c"
 #include "definitions.h"
 
-//task main()
-//{
-//	SensorType[S4] = sensorI2CCustom9V;
-//	Point a;
-//	AngleSet b;
-//	AngleSet c;
-//	c.alpha = 120;
-//	a.x = 200;
-//	a.y = 100;
-//	a.z = 100;
-//	calcAngleSet(a, b);
-//	displayString(1, "%.2f", b.alpha);
-//	moveJ2(b);
-//	/*
-//	(-90, 39)
-//	(-20, 1)
-//	(45, 46)
-//	(90, 60)
-
-//	*/
-//	wait1Msec(100000);
-//}
-
 
 bool calcAngleSet(Point& input, AngleSet& outputAngles)
 {
@@ -40,18 +17,25 @@ bool calcAngleSet(Point& input, AngleSet& outputAngles)
 	// where I had to calculate the angles of a limb before
 
 	bool output = false;
-		float newX = sqrt(input.x * input.x + input.y * input.y);
+	float newX = sqrt(input.x * input.x + input.y * input.y);
 	float L = calcL(input, newX);
 	float alpha = calcAlpha(input, L, newX);
 	float beta = calcBeta(input, L);
 	float theta = calcTheta(input);
-	if (areAnglesValid(alpha, beta))
-	{
-		output = true;
-		outputAngles.alpha = radToDeg(alpha);
-		outputAngles.beta = radToDeg(beta);
-		outputAngles.theta = radToDeg(theta);
-	}
+	output = true;
+	outputAngles.alpha = radToDeg(alpha);
+	outputAngles.beta = radToDeg(beta);
+	outputAngles.theta = radToDeg(theta);
+
+	displayString(0, "%.2f", outputAngles.alpha);
+	displayString(1, "%.2f", outputAngles.beta);
+	//if (areAnglesValid(alpha, beta))
+	//{
+	//	output = true;
+	//	outputAngles.alpha = radToDeg(alpha);
+	//	outputAngles.beta = radToDeg(beta);
+	//	outputAngles.theta = radToDeg(theta);
+	//}
 	return output;
 }
 
@@ -78,7 +62,7 @@ float calcAlpha(Point& input, float L, float newX)
 {
 	// Nov 17, 2016
 	// Dustin Hu
-	return calcAlpha1(input, newX) + calcAlpha2(input, L);
+	return calcAlpha1(input, newX) + calcAlpha2(input, L) + PI/2.0;
 }
 
 float calcAlpha1(Point& input, float newX)
@@ -109,7 +93,7 @@ float calcBeta(Point& input, float L)
 	// and the forearm
 	float numerator = (L * L) - (SHOULDER * SHOULDER) - (FOREARM * FOREARM);
 	float denominator = -2.0 * SHOULDER * FOREARM;
-	return acos(numerator/denominator);
+	return acos(numerator/denominator) - PI;
 }
 
 
