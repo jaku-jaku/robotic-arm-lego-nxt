@@ -159,7 +159,9 @@ void moveJ2(AngleSet& input)
 	// Purpose: To move the second joint to the desired angle
 	// Input: The angle set to move to
 	// It is assumed that the angleSet is valid
-	setServoPosition(S4, 1, 0.0333 * input.alpha * input.alpha - 3 * input.alpha - 30 );
+	//displayString(2, "%.2f", 0.0333 * input.alpha * input.alpha - 3 * input.alpha - 30);
+	//displayString(3, "%.2f", 0.0014 * input.alpha * input.alpha + 1.5288 * input.alpha - 173.79);
+	setServoPosition(S4, 1, 0.0014 * input.alpha * input.alpha + 1.5288 * input.alpha - 173.79);
 }
 void moveJ3(AngleSet& input)
 {

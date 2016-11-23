@@ -7,7 +7,7 @@ task main()
 
 	Point a;
 	AngleSet b;
-	a.x = 100;
+	a.x = 300;
 	a.y = 100;
 	a.z = 100;
 
@@ -19,6 +19,6 @@ task main()
 	moveJ3(b);
 	//setServoPosition(S4, 2, 90);
 
-
+	//setServoPosition(S4, 1, 50);
 	delay(10000);
 }
