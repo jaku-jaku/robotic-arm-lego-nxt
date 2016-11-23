@@ -9,7 +9,6 @@ const int J2 = 1;
 const int J3 = 2;
 const int GRIPPER = 3;
 const int MAX = 8;
-const int GEAR_REDUCTION_RATIO = 5 // 1:5 for us
 const int FULL_ROTATION_EC_VALUE = 360 * 5;
 const int SHOULDER = 157; // First length, from J2-J3 in mm
 const int FOREARM = 197; // Second length, from J3-End in mm
@@ -44,10 +43,10 @@ typedef struct
 // Dustin Hu
 bool calcAngleSet(Point& input, AngleSet& outputAngles);
 
-float calcL(Point& input, float newX);
+float calcL(Point& input);
 float calcTheta(Point& input);
-float calcAlpha(Point& input, float L, float newX);
-float calcAlpha1(Point& input, float newX);
+float calcAlpha(Point& input, float L);
+float calcAlpha1(Point& input);
 float calcAlpha2(Point& input, float L);
 float calcBeta(Point& input, float L);
 
@@ -57,7 +56,6 @@ bool areAnglesValid(float alpha, float beta);
 //servoOutput
 void moveJ2(AngleSet& input);
 void moveJ3(AngleSet& input);
-int convAngleToEncoder(float angle);
 
 float radToDeg(float rad);
 
@@ -67,6 +65,8 @@ int getDistance();
 int angleToEC(float angle);
 
 void zeroECValue();
+int smoothMotionFunc(float index0, int MAXspeed0,int MINspeed0);
+int smoothMotion(int curECdif, int initialECDiff);
 void rotate(bool clockwise, int power);
 void moveToTarget(int targetEC, int tolerance);
 void zeroZAxis();
@@ -76,5 +76,3 @@ void gripperController(int angle);
 bool isUpperOrLowerInRange(bool isAbove, float x);
 bool isPointValid(Point& p);
 void readPoint(TFileHandle & fin, Point p);
-
-float calcMaximumBeta(AngleSet& input);

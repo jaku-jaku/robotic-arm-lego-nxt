@@ -2,6 +2,29 @@
 #include "NXT_FileIO.c"
 #include "definitions.h"
 
+//task main()
+//{
+//	SensorType[S4] = sensorI2CCustom9V;
+//	Point a;
+//	AngleSet b;
+//	AngleSet c;
+//	c.alpha = 120;
+//	a.x = 200;
+//	a.y = 100;
+//	a.z = 100;
+//	calcAngleSet(a, b);
+//	displayString(1, "%.2f", b.alpha);
+//	moveJ2(b);
+//	/*
+//	(-90, 39)
+//	(-20, 1)
+//	(45, 46)
+//	(90, 60)
+
+//	*/
+//	wait1Msec(100000);
+//}
+
 
 bool calcAngleSet(Point& input, AngleSet& outputAngles)
 {
@@ -15,40 +38,30 @@ bool calcAngleSet(Point& input, AngleSet& outputAngles)
 	// will be valid
 	// Disclaimer: I have done a similar project
 	// where I had to calculate the angles of a limb before
-
 	bool output = false;
-	float newX = sqrt(input.x * input.x + input.y * input.y);
-	float L = calcL(input, newX);
-	float alpha = calcAlpha(input, L, newX);
+	float L = calcL(input);
+	float alpha = calcAlpha(input, L);
 	float beta = calcBeta(input, L);
 	float theta = calcTheta(input);
-	output = true;
-	outputAngles.alpha = radToDeg(alpha);
-	outputAngles.beta = radToDeg(beta);
-	outputAngles.theta = radToDeg(theta);
-
-	displayString(0, "%.2f", outputAngles.alpha);
-	displayString(1, "%.2f", outputAngles.beta);
-	displayString(2, "%.2f", outputAngles.theta);
-	//if (areAnglesValid(alpha, beta))
-	//{
-	//	output = true;
-	//	outputAngles.alpha = radToDeg(alpha);
-	//	outputAngles.beta = radToDeg(beta);
-	//	outputAngles.theta = radToDeg(theta);
-	//}
+	if (areAnglesValid(alpha, beta))
+	{
+		output = true;
+		outputAngles.alpha = radToDeg(alpha);
+		outputAngles.beta = radToDeg(beta);
+		outputAngles.theta = radToDeg(theta);
+	}
 	return output;
 }
 
 
 
-float calcL(Point& input, float newX)
+float calcL(Point& input)
 {
 	// Author: Dustin Hu
 	// Date: November 17th, 2016
 	// Purpose: To calculate the length of the line
 	// Connecting the end effector and the origin (Check diagrams)
-	return sqrt(newX * newX + input.z * input.z);
+	return sqrt(input.x * input.x + input.z * input.z);
 }
 
 float calcTheta(Point& input)
@@ -56,22 +69,22 @@ float calcTheta(Point& input)
 	// Author: Dusti nHu
 	// Date: November 17th, 2016
 	// Purpose: to calculate the theta (Base angle) of the point
-	return atan2(input.y, input.x);
+	return atan2(input.z, input.y);
 }
 
-float calcAlpha(Point& input, float L, float newX)
+float calcAlpha(Point& input, float L)
 {
 	// Nov 17, 2016
 	// Dustin Hu
-	return calcAlpha1(input, newX) + calcAlpha2(input, L) + PI/2.0;
+	return calcAlpha1(input) + calcAlpha2(input, L);
 }
 
-float calcAlpha1(Point& input, float newX)
+float calcAlpha1(Point& input)
 {
 	// Author: Dustin Hu
 	// Date: November 17th, 2016
 	// Purpose: to calculate alpha1
-	return atan2(input.z, newX);
+	return atan2(input.z, input.x);
 }
 
 
@@ -94,7 +107,7 @@ float calcBeta(Point& input, float L)
 	// and the forearm
 	float numerator = (L * L) - (SHOULDER * SHOULDER) - (FOREARM * FOREARM);
 	float denominator = -2.0 * SHOULDER * FOREARM;
-	return acos(numerator/denominator) - PI;
+	return acos(numerator/denominator);
 }
 
 
@@ -160,9 +173,7 @@ void moveJ2(AngleSet& input)
 	// Purpose: To move the second joint to the desired angle
 	// Input: The angle set to move to
 	// It is assumed that the angleSet is valid
-	//displayString(2, "%.2f", 0.0333 * input.alpha * input.alpha - 3 * input.alpha - 30);
-	//displayString(3, "%.2f", 0.0014 * input.alpha * input.alpha + 1.5288 * input.alpha - 173.79);
-	setServoPosition(S4, 1, 0.0014 * input.alpha * input.alpha + 1.5288 * input.alpha - 173.79);
+	setServoPosition(S4, 1, 0.0333 * input.alpha * input.alpha - 3 * input.alpha - 30 );
 }
 void moveJ3(AngleSet& input)
 {
@@ -170,20 +181,12 @@ void moveJ3(AngleSet& input)
 	// date: November 20, 2016
 	// Purpose: To move the 3rd joint
 	// It is assumed that the angle set is valid
-	setServoPosition(S4, 2, -0.0007 * input.beta * input.beta
-													+ 0.9882 * input.beta
-													+21.773);
+	setServoPosition(S4, 2, -0.00001 * pow(input.beta, 3)
+	-0.0015 * input.beta * input.beta
+	+ 0.9472 * input.beta
+	+ 25);
 
 }
-
-int convAngleToEncoder(float input)
-{
-	// Author: Dustin Hu
-// Date: November 23, 2016
-// Purpose: To convert an angle to encoder value
-	return input * GEAR_REDUCTION_RATIO;
-}
-
 
 float radToDeg(float rad)
 {
@@ -213,13 +216,40 @@ void zeroECValue()
 void rotate(bool clockwise, int power)
 {
 	if (!clockwise)
-		power = -1 * power;
+	power = -1 * power;
 	motor[J1] = power;
+}
+
+//Version----2
+int smoothMotionFunc(float index0, int MAXspeed0,int MINspeed0){
+	float percent=1/(1+pow(10,(2-4*index0));
+	int speed=1;
+	if(percent<1){
+		speed=(int)((MAXspeed0-MINspeed0)*percent)+MINspeed0;
+	}
+	return speed;
+	//y=1/(1+10^(2-4x))
+	//On theory accelerate 0-1 in 0-1
+	//and after x=1, y->1
+	//so for computation, we do not need to calculate input after x=1
+}
+
+int smoothMotion(int curECdif, int initialECDiff){
+	int MAXspeed=70,MINspeed=10;
+	float index=0, ANGLECHANGE=20;
+	//20 degree for changing speed
+	index=curECdif;
+	if(curECdif>initialECDiff/2.0){
+		index=initialECDiff-index;
+		//reverse at middle of the action to gain slow down in the end
+	}
+	index/=ANGLECHANGE;
+	return smoothMotionFunc(index, MAXspeed,MINspeed);
 }
 
 void moveToTarget(int targetEC, int tolerance)
 {
-	int moveSpeed = 0, DIFF=0, angleDiff=0,MAXspeed=70,MINspeed=10;
+	int moveSpeed = 0, angleDiff=0,initDiff=0;
 	bool cw = true;
 	if (targetEC > FULL_ROTATION_EC_VALUE/2.0)
 	{
@@ -229,23 +259,36 @@ void moveToTarget(int targetEC, int tolerance)
 	}
 
 	angleDiff= targetEC - getECValue();
+initDiff=angleDiff;
 
-	wait1Msec(5000);
-	float x=0;
-	DIFF=angleDiff;
-	MAXspeed=(int)((MAXspeed-MINspeed)*DIFF*2.0/FULL_ROTATION_EC_VALUE/10.0)+MINspeed;
-	moveSpeed=30;
-	angleDiff = angleDiff;
 	//MAXspeed depends on the rotation difference
 	while (angleDiff!=0)
 	{
-		displayString(3, "%f", angleDiff);
-		//displayString(3,"%f",moveSpeed);
+				angleDiff=targetEC-getECValue();
+		moveSpeed=20;
+		displayString(3,"%f",moveSpeed);
 		rotate(cw, moveSpeed);
-	  angleDiff=targetEC-getECValue();
 	}
 	rotate(false, 0);
 }
+//----Version-1
+// int smoothMotion(int curECdif, int initialECDiff){
+// 	int MAXspeed=70,MINspeed=10;
+// 	float DOMAINWIDTH=6.4, index=0;
+// 	if(curECdif<initialECDiff/2.0){
+// 		index=curECdif*2.0/FULL_ROTATION_EC_VALUE*DOMAINWIDTH;
+// 	}else{
+// 		index=DOMAINWIDTH+(curECdif-initialECDiff)*2.0/FULL_ROTATION_EC_VALUE*DOMAINWIDTH;
+// 	}
+// 	return smoothMotionFunc(index, MAXspeed,MINspeed);
+// }
+// int smoothMotionFunc(float index0to6d4, int MAXspeed0,int MINspeed0){
+// 	float percent=1/(1+pow(10,(index0to6d4-0.4)*(index0to6d4-6)));
+// 	return (int)((MAXspeed0-MINspeed0)*percent)+MINspeed0;
+// 	//y=1/(1+10^(x-0.4)(x-6))
+// 	//On theory accelerate to max in 20 degree
+// }
+
 //void moveToTarget(int targetEC, int tolerance)
 //{
 //	int moveSpeed = 75;
@@ -292,7 +335,7 @@ void zeroZAxis()
 		{
 			minDist = distAvg;
 			targetEC = currentEC;
-				displayString(7,"Found %f",targetEC);
+			displayString(7,"Found %f",targetEC);
 		}
 	}
 	rotate (true, 0);
@@ -302,7 +345,7 @@ void zeroZAxis()
 
 void gripperController(int angle){	//0 closed, 180 open
 	if (angle>=0||angle<=180)
-		setServoPosition (S_SERVO, GRIPPER, angle);
+	setServoPosition (S_SERVO, GRIPPER, angle);
 }
 
 //void zeroZAxis()
@@ -335,12 +378,12 @@ bool isUpperOrLowerInRange(bool isAbove, float hyp, float x) {
 	if (isAbove)
 	{
 		if ((x >= 0 && hyp-SHOULDER*sin(PI/6.0) >= 0) || (x < 0 && hyp-SHOULDER*sin(PI/6.0) < 0))
-			isInRange = true;
+		isInRange = true;
 	}
 	else
 	{
 		if ((x >= 0 && hyp-SHOULDER*cos(PI/6.0) >= 0) || (x < 0 && hyp-SHOULDER*cos(PI/6.0) < 0))
-			isInRange = true;
+		isInRange = true;
 	}
 
 	return isInRange;
@@ -409,14 +452,4 @@ void readPoint(TFileHandle & fin, Point p) {
 	bool currPointValid = isPointValid(p);
 	//bool currPointValid=true;
 	p.isValid = currPointValid;
-}
-
-float calcMaximumBeta(AngleSet& input)
-{
-	float output = 30;
-	if ((180 - input.alpha) < 30)
-	{
-		output = 180 - input.alpha;
-	}
-	return output;
 }
