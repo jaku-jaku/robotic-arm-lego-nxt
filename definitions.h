@@ -9,6 +9,7 @@ const int J2 = 1;
 const int J3 = 2;
 const int GRIPPER = 3;
 const int MAX = 8;
+const int GEAR_REDUCTION_RATIO = 5 // 1:5 for us
 const int FULL_ROTATION_EC_VALUE = 360 * 5;
 const int SHOULDER = 157; // First length, from J2-J3 in mm
 const int FOREARM = 197; // Second length, from J3-End in mm
@@ -56,6 +57,7 @@ bool areAnglesValid(float alpha, float beta);
 //servoOutput
 void moveJ2(AngleSet& input);
 void moveJ3(AngleSet& input);
+int convAngleToEncoder(float angle);
 
 float radToDeg(float rad);
 

@@ -176,6 +176,15 @@ void moveJ3(AngleSet& input)
 
 }
 
+int convAngleToEncoder(float input)
+{
+	// Author: Dustin Hu
+// Date: November 23, 2016
+// Purpose: To convert an angle to encoder value
+	return input * GEAR_REDUCTION_RATIO;
+}
+
+
 float radToDeg(float rad)
 {
 	return rad * (180.0/PI);
