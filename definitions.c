@@ -39,15 +39,22 @@ bool calcAngleSet(Point& input, AngleSet& outputAngles)
 	// Disclaimer: I have done a similar project
 	// where I had to calculate the angles of a limb before
 	bool output = false;
-	float L = calcL(input);
-	float newX = sqrt(input.x * input.x +
-	float alpha = calcAlpha(input, L);
+	float newX = sqrt(input.x * input.x + input.y * input.y);
+	float L = calcL(input, newX);
+	float alpha = calcAlpha(input, L, newX);
 	float beta = calcBeta(input, L);
 	float theta = calcTheta(input);
+	displayString(0, "%.2f", radToDeg(alpha));
 	output = true;
 	outputAngles.alpha = radToDeg(alpha);
 	outputAngles.beta = radToDeg(beta);
 	outputAngles.theta = radToDeg(theta);
+	if (calcMaximumBeta(outputAngles) == 30)
+	{
+		outputAngles.beta = 30;
+	}
+	displayString(0, "%.2f", outputAngles.alpha);
+	displayString(1, "%.2f", outputAngles.beta);
 	//if (areAnglesValid(alpha, beta))
 	//{
 	//	output = true;
@@ -60,13 +67,13 @@ bool calcAngleSet(Point& input, AngleSet& outputAngles)
 
 
 
-float calcL(Point& input)
+float calcL(Point& input, float newX)
 {
 	// Author: Dustin Hu
 	// Date: November 17th, 2016
 	// Purpose: To calculate the length of the line
 	// Connecting the end effector and the origin (Check diagrams)
-	return sqrt(input.x * input.x + input.z * input.z);
+	return sqrt(newX * newX + input.z * input.z);
 }
 
 float calcTheta(Point& input)
@@ -77,19 +84,19 @@ float calcTheta(Point& input)
 	return atan2(input.z, input.y);
 }
 
-float calcAlpha(Point& input, float L)
+float calcAlpha(Point& input, float L, float newX)
 {
 	// Nov 17, 2016
 	// Dustin Hu
-	return calcAlpha1(input) + calcAlpha2(input, L);
+	return calcAlpha1(input, newX) + calcAlpha2(input, L);
 }
 
-float calcAlpha1(Point& input)
+float calcAlpha1(Point& input, float newX)
 {
 	// Author: Dustin Hu
 	// Date: November 17th, 2016
 	// Purpose: to calculate alpha1
-	return atan2(input.z, input.x);
+	return atan2(input.z, newX);
 }
 
 
