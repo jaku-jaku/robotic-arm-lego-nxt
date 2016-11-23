@@ -39,10 +39,21 @@ bool calcAngleSet(Point& input, AngleSet& outputAngles)
 	// Disclaimer: I have done a similar project
 	// where I had to calculate the angles of a limb before
 	bool output = false;
-	float L = calcL(input);
-	float alpha = calcAlpha(input, L);
+	float newX = sqrt(input.x * input.x + input.y * input.y);
+	float L = calcL(input, newX);
+	float alpha = calcAlpha(input, L, newX);
 	float beta = calcBeta(input, L);
 	float theta = calcTheta(input);
+
+	output = true;
+	outputAngles.alpha = radToDeg(alpha);
+	outputAngles.beta = radToDeg(beta);
+	outputAngles.theta = radToDeg(theta);
+
+	displayString(0, "%.2f", outputAngles.alpha);
+	displayString(1, "%.2f", outputAngles.beta);
+	displayString(2, "%.2f", outputAngles.theta);
+
 	if (areAnglesValid(alpha, beta))
 	{
 		output = true;
@@ -55,13 +66,13 @@ bool calcAngleSet(Point& input, AngleSet& outputAngles)
 
 
 
-float calcL(Point& input)
+float calcL(Point& input, float newX)
 {
 	// Author: Dustin Hu
 	// Date: November 17th, 2016
 	// Purpose: To calculate the length of the line
 	// Connecting the end effector and the origin (Check diagrams)
-	return sqrt(input.x * input.x + input.z * input.z);
+	return sqrt(newX * newX + input.z * input.z);
 }
 
 float calcTheta(Point& input)
@@ -72,11 +83,11 @@ float calcTheta(Point& input)
 	return atan2(input.z, input.y);
 }
 
-float calcAlpha(Point& input, float L)
+float calcAlpha(Point& input, float L, float newX)
 {
 	// Nov 17, 2016
 	// Dustin Hu
-	return calcAlpha1(input) + calcAlpha2(input, L);
+	return calcAlpha1(input, newX) + calcAlpha2(input, L) + PI/2.0;
 }
 
 float calcAlpha1(Point& input)
@@ -84,7 +95,7 @@ float calcAlpha1(Point& input)
 	// Author: Dustin Hu
 	// Date: November 17th, 2016
 	// Purpose: to calculate alpha1
-	return atan2(input.z, input.x);
+	return atan2(input.z, newX);
 }
 
 
@@ -107,7 +118,7 @@ float calcBeta(Point& input, float L)
 	// and the forearm
 	float numerator = (L * L) - (SHOULDER * SHOULDER) - (FOREARM * FOREARM);
 	float denominator = -2.0 * SHOULDER * FOREARM;
-	return acos(numerator/denominator);
+	return acos(numerator/denominator) - PI;
 }
 
 
@@ -173,7 +184,7 @@ void moveJ2(AngleSet& input)
 	// Purpose: To move the second joint to the desired angle
 	// Input: The angle set to move to
 	// It is assumed that the angleSet is valid
-	setServoPosition(S4, 1, 0.0333 * input.alpha * input.alpha - 3 * input.alpha - 30 );
+	setServoPosition(S4, 1, 0.0014 * input.alpha * input.alpha + 1.5288 * input.alpha - 173.79);
 }
 void moveJ3(AngleSet& input)
 {
