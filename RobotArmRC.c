@@ -82,7 +82,7 @@ task main()
 	if(isFileOk)
 		readIntPC(fin, QUANTITY);
 	if (!isFileOk&&QUANTITY<=0)
-		displayString(0,"You fucked up");
+		displayString(0,"ERROR! File");
 	else{//whole program
 		//-BEGIN- Auto-Calibrating joint1
 		nxtDisplayCenteredTextLine(0, "Calibrate!");
@@ -149,15 +149,15 @@ task main()
 					//displayString(4,"??? Any Button");
 					PlaySound(soundBeepBeep);
 					while(nNxtButtonPressed==-1){}//END while-bt
-									ClearSounds();
+					ClearSounds();
 					while(nNxtButtonPressed!=-1){}
 					wait1Msec(500);
-						eraseDisplay();
-						displayString(4,"NEXT");
+					eraseDisplay();
+					displayString(4,"NEXT");
 					//waitAndContinue();
 				}//END else
 			}//END for loop
-						itr-=MAX;
+			itr-=MAX;
 		}//END while loop
 	}//END else statement
 	//--END--//

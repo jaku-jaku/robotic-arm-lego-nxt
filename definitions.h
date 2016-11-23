@@ -43,10 +43,10 @@ typedef struct
 // Dustin Hu
 bool calcAngleSet(Point& input, AngleSet& outputAngles);
 
-float calcL(Point& input, float newX);
+float calcL(Point& input);
 float calcTheta(Point& input);
-float calcAlpha(Point& input, float L, float newX);
-float calcAlpha1(Point& input, float newX);
+float calcAlpha(Point& input, float L);
+float calcAlpha1(Point& input);
 float calcAlpha2(Point& input, float L);
 float calcBeta(Point& input, float L);
 
@@ -74,8 +74,3 @@ void gripperController(int angle);
 bool isUpperOrLowerInRange(bool isAbove, float x);
 bool isPointValid(Point& p);
 void readPoint(TFileHandle & fin, Point p);
-
-//
-float calcMaximumBeta(AngleSet& input);
-float calcDist(Point& input);
-float cosineLawAngle(float dist);
