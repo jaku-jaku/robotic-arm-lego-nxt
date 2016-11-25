@@ -115,11 +115,11 @@ bool isPointValid(Point & p0, AngleSet & a0)
 
 int getEC(){
 	int ECvalue=nMotorEncoder[motorA]%FULL_ROTATION_EC;
-	displayString(1,"%f",ECvalue);
+	//displayString(1,"%f",ECvalue);
 	if(ECvalue<0){
 		ECvalue+=FULL_ROTATION_EC;
 	}
-	displayString(2,"%f",ECvalue);
+	//displayString(2,"%f",ECvalue);
 	return ECvalue;
 }
 
@@ -146,7 +146,7 @@ int smoothMotion(int curECdif, int initialECDiff){
 		//reverse at middle of the action to gain slow down in the end
 	}
 	index=index/(ANGLECHANGE*5);
-		displayString(2,"%f",index);
+		//displayString(2,"%f",index);
 	return smoothMotionFunc(index, MAXspeed,MINspeed);
 }
 void moveJoint1(float ang)
@@ -156,11 +156,11 @@ void moveJoint1(float ang)
 		ang+=360;
 	int targetEC = (int)(ang*FULL_ROTATION_EC/360.0);
 	int forward=1,cw=1;//1 f/ -1 b
-	displayString(6,"%i",targetEC);
+	//displayString(6,"%i",targetEC);
 	int diff=targetEC-getEC();
 	int initDiff=diff;
-		displayString(7,"%i",getEC());
-		wait1Msec(2000);
+		//displayString(7,"%i",getEC());
+		//wait1Msec(2000);
 	while(diff!=0){
 		forward=1;
 		cw=1;
@@ -170,11 +170,11 @@ void moveJoint1(float ang)
 		if(diff>0){
 			cw=-1;
 		}
-			displayString(7,"%i",getEC())
+			//displayString(7,"%i",getEC())
 			power=smoothMotion(fabs(initDiff-diff),fabs(initDiff));
 		motor[J1] = -1*power*cw*forward;
   	diff=targetEC-getEC();
-  	displayString(7,"%i",getEC());
+  	//displayString(7,"%i",getEC());
   	if(diff==0){
   			motor[J1] = 0;
   	}
@@ -209,6 +209,8 @@ void zeroZAxis()
 	int distSum = 0;
 	int distAvg = 0;
 
+	moveJoint2(120);
+	moveJoint3(-70);
 	nMotorEncoder[J1]=0;
 	motor[J1]=power;
 	while (nMotorEncoder[J1] < FULL_ROTATION_EC)
@@ -230,8 +232,8 @@ void zeroZAxis()
 		}
 	}
 	motor[J1]=0;
-	displayString(6,"Current %f",getEC());
-	wait1Msec(2000);
+	//displayString(6,"Current %f",getEC());
+	//wait1Msec(2000);
 	moveJoint1(targetEC*1.0/GEAR_REDUCTION);
 	nMotorEncoder[J1]=0;
 }
@@ -248,4 +250,11 @@ void gripperBalls(){
 	else{
 		gripperController(20);
 	}
+}
+
+
+int map(int inputMin, int inputMax, int outputMin, int outputMax, int input)
+{
+	//https://www.arduino.cc/en/Reference/Map
+	return (input - inputMin) * (outputMax - outputMin) / (inputMax - inputMin) + outputMin;
 }

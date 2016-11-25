@@ -75,9 +75,11 @@ task main()
 
 
 		//-BEGIN- start to performing
+		PlaySound(soundBeepBeep);
 		nxtDisplayCenteredTextLine(0, "System Ready");
 		displayString(2,"Press Any Button");
 		displayString(3,"to begin the task");
+		gripperBalls();
 		waitBtn();
 		eraseDisplay();
 
@@ -115,6 +117,7 @@ task main()
 					wait1Msec(listOfAngles[i].tMsDelay);
 				}//END-if
 				else{
+					eraseDisplay();
 					nxtDisplayCenteredTextLine(0, "ERROR");
 					displayString(2,"Do you want to");
 					displayString(3,"skip and continue");
@@ -128,7 +131,7 @@ task main()
 					displayString(4,"NEXT");
 					//waitAndContinue();
 				}//END-else
-				gripperBalls();
+
 			}//END-for
 		 QUANleft-=MAX;
 		}//END-while
