@@ -1,4 +1,4 @@
-#include "definitions.c"
+#include "definitions.h"
 
 //---------------------//
 //---Button Function---//
@@ -28,7 +28,7 @@ task stopIfUnsafe()
 {
 	while (SensorValue[S_TOUCH] == 0)
 	{
-		 gripperController(90);
+		gripperController(90);
 		EndTimeSlice();
 	}
 
@@ -94,12 +94,11 @@ task main()
 		nxtDisplayCenteredTextLine(0, "System Ready");
 		displayString(2,"GIVE THE BALL");
 		displayString(3,"TO THE ROBOT!");
-		 gripperController(90);
-		while(SensorValue[S_COLOR]==nothing){
-	 }
-	 gripperController(20);
+		gripperController(90);
+		while(SensorValue[S_COLOR]==nothing)
+		{};
 		eraseDisplay();
-	waitAndContinue();
+		waitAndContinue();
 		//---READY File input---//
 		QUANleft=QUANTITY;
 		while(cnt<QUANTITY)
