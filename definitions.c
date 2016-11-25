@@ -2,243 +2,165 @@
 #include "NXT_FileIO.c"
 #include "definitions.h"
 
-//task main()
-//{
-//	SensorType[S4] = sensorI2CCustom9V;
-//	Point a;
-//	AngleSet b;
-//	AngleSet c;
-//	c.alpha = 120;
-//	a.x = 200;
-//	a.y = 100;
-//	a.z = 100;
-//	calcAngleSet(a, b);
-//	displayString(1, "%.2f", b.alpha);
-//	moveJ2(b);
-//	/*
-//	(-90, 39)
-//	(-20, 1)
-//	(45, 46)
-//	(90, 60)
-
-//	*/
-//	wait1Msec(100000);
-//}
-
-
-bool calcAngleSet(Point& input, AngleSet& outputAngles)
+void readPoint(TFileHandle & in, Point & p0)
 {
-	// Author: Dustin Hu
-	// Date: November 17th, 2016
-	// Purpose: To calculate the set of angles
-	// Input: The point to calculate to and the output angle set to outpu to
-	// Output: True if successfully calculated
-	// Note: It is assumed that this is a valid point
-	// But it is not assumed that the angles that will be produced
-	// will be valid
-	// Disclaimer: I have done a similar project
-	// where I had to calculate the angles of a limb before
-	bool output = false;
-	float newX = sqrt(input.x * input.x + input.y * input.y);
-	float L = calcL(input, newX);
-	float alpha = calcAlpha(input, L, newX);
-	float beta = calcBeta(input, L);
-	float theta = calcTheta(input);
+	readFloatPC(in, p0.x);
+	readFloatPC(in, p0.y);
+	readFloatPC(in, p0.z);
+	readIntPC(in, p0.gP);
+		readIntPC(in, p0.tMsDelay);
+}
 
-	output = true;
-	outputAngles.alpha = radToDeg(alpha);
-	outputAngles.beta = radToDeg(beta);
-	outputAngles.theta = radToDeg(theta);
+bool isZValueValid (Point p0)
+{
+	return (p0.z > GROUND_HEIGHT);
+}
 
-	displayString(0, "%.2f", outputAngles.alpha);
-	displayString(1, "%.2f", outputAngles.beta);
-	displayString(2, "%.2f", outputAngles.theta);
+bool isWithinRange (Point p0)
+{
+	return (sqrt(p0.x*p0.x + p0.y*p0.y + p0.z*p0.z))	< MAX_DIST;
+}
 
-	if (areAnglesValid(alpha, beta))
+
+float calcAlpha(Point & input, float distanceXY, float distancePlane)
+{
+	/*
+	Author: DUstin Hu
+	Date: November 20th 2016
+	Purpose: To calculate the angle relative to the vertical
+	Input: THe point to move to 
+			DistanceXY: The hypotenuse of the XY; base of the triangle formed with the XY Plane
+			DistancePlane: THe base of the triangle to calculate the angle with
+	Output: The angle in degrees
+	*/
+	float a1 = atan2(input.z,distanceXY);
+	float num = (FOREARM*FOREARM) - (SHOULDER*SHOULDER) - (distancePlane*distancePlane);
+	float denom = -2.0 * SHOULDER * distancePlane;
+	float a2 = acos(num/denom);
+
+	return (180.0/PI)*(a1 + a2 + PI/2.0);
+}
+
+float calcBeta(Point & input, float distancePlane)
+{
+	/*
+	Author: Dusti nHu
+	Date :Nvomebre 20th, 2016
+	Purpose: To calculate the angle beta 
+	Input: The input point, in xyz
+			The distance plane, which represents the distance from the tip of the gripper to the origin
+			Origin is at midponit of the servos
+	Output: The angle beta, which is +/-90 relative to the shoulder
+	*/
+	float num = (distancePlane*distancePlane) - (SHOULDER*SHOULDER) - (FOREARM*FOREARM);
+	float denom = -2.0*SHOULDER*FOREARM;
+
+	return (180.0/PI)*(acos(num/denom) - PI); //might inverst PI and acos
+}
+
+float calcTheta(Point & input)
+{
+	/*
+	Author: DUstin HU
+	Dathe: November 20th 2016
+	Purpose: To calculate the angle theta, the angle on the XY plane
+	Input: The point to calculate with
+	OUtput: The angle theta
+	*/
+
+	return (180.0/PI)*(atan2(input.y,input.x));
+}
+
+
+void calcAngleSet(Point & inputP, AngleSet & outputA)
+{
+	/*
+	AUthor: Dustin Hu
+	Date: November 20th, 2016
+	Purpose: To calculate the set of angles
+	*/
+	float distXY = sqrt(inputP.x*inputP.x + inputP.y*inputP.y);
+	float distPlanar = sqrt(distXY*distXY + inputP.z*inputP.z);
+
+	outputA.alpha = calcAlpha(inputP,distXY,distPlanar);
+	outputA.beta = calcBeta(inputP,distPlanar);
+	outputA.theta = calcTheta(inputP);
+}
+
+float min (float a, float b)
+{
+	if (b < a)
 	{
-		output = true;
-		outputAngles.alpha = radToDeg(alpha);
-		outputAngles.beta = radToDeg(beta);
-		outputAngles.theta = radToDeg(theta);
+		return b;
+	}
+
+	return a;
+}
+
+float calcMaxBeta (AngleSet & a0)
+{
+	float beta = 180-a0.alpha;
+	displayString(0,"%0.2f", beta);
+	return min(beta, J3_PHYS_LIM);
+}
+
+bool anglesValid (AngleSet & a0)
+{
+	bool output = false;
+	if (a0.alpha <=ALPHA_MAX && a0.alpha >= ALPHA_MIN)
+	{
+
+		if (!(a0.beta < calcMaxBeta(a0)))
+		{
+		}
+		else
+		{
+			output = true;
+		}
 	}
 	return output;
 }
 
-
-
-float calcL(Point& input, float newX)
+bool isPointValid(Point & p0, AngleSet & a0)
 {
-	// Author: Dustin Hu
-	// Date: November 17th, 2016
-	// Purpose: To calculate the length of the line
-	// Connecting the end effector and the origin (Check diagrams)
-	return sqrt(newX * newX + input.z * input.z);
-}
-
-float calcTheta(Point& input)
-{
-	// Author: Dusti nHu
-	// Date: November 17th, 2016
-	// Purpose: to calculate the theta (Base angle) of the point
-	return atan2(input.z, input.y);
-}
-
-float calcAlpha(Point& input, float L, float newX)
-{
-	// Nov 17, 2016
-	// Dustin Hu
-	return calcAlpha1(input, newX) + calcAlpha2(input, L) + PI/2.0;
-}
-
-float calcAlpha1(Point& input)
-{
-	// Author: Dustin Hu
-	// Date: November 17th, 2016
-	// Purpose: to calculate alpha1
-	return atan2(input.z, newX);
-}
-
-
-float calcAlpha2(Point& input, float L)
-{
-	// Author: Dustin Hu
-	// Date: November 17th, 2016
-	// Purpose: Calculate alpha2 using cosine law
-
-	float numerator = (FOREARM * FOREARM) - (SHOULDER * SHOULDER) - (L * L);
-	float denominator = -2.0 * SHOULDER * L;
-	return acos(numerator/denominator);
-}
-
-float calcBeta(Point& input, float L)
-{
-	// Author: Dustin Hu
-	// Date: November 18th, 2016
-	// Purpose: To calculate beta, the angle between the shouder
-	// and the forearm
-	float numerator = (L * L) - (SHOULDER * SHOULDER) - (FOREARM * FOREARM);
-	float denominator = -2.0 * SHOULDER * FOREARM;
-	return acos(numerator/denominator) - PI;
-}
-
-
-bool isAlphaValid(float alpha)
-{
-	// Author: Dustin Hu
-	// Daet: November 18th, 2016
-	// Purpose: to check if alpha is valid
-	// Input: An angle Alpha in radians
-	// Note: Assumes that there is a range of motion of pi/2 rad
-	// With a pi/6 segment chopped off at the top
-	// And a pi/3 segment chopped of at the bottom
-
+	//is point close enough to be able to be reached
+	//check z value above the grounnd isZValueValid fun
 	bool output = false;
-	// To make reading easier
-	alpha = radToDeg(alpha);
-
-	if (alpha > 60 && alpha < 150)
+	if (isWithinRange (p0) && isZValueValid (p0))
 	{
-		output = true;
+		calcAngleSet(p0,a0); // calculates all 3 angles
+
+		if (anglesValid (a0))
+		{
+			output = true;
+		}
+		//is alpha within range
+		//is beta within range
+		//if all of the above are okay, then go ahead and move.
 	}
+	a0.gP=p0.gP;
+	a0.tMsDelay=p0.tMsDelay;
+	//passing time delay
 	return output;
 }
 
-bool isBetaValid(float beta)
-{
-	// Author: Dustin Hu
-	// Date: November 20th, 2016
-	// Purpose: To check if the beta angle is valid
-	// Input: The angle beta in radians
-	// Note: Beta must be between -pi/2 and pi/2, with
-	// 0 defined as being parallel with J2
-	bool output = false;
-	// To make reading easier
-	beta = radToDeg(beta);
-	if (beta > -90 && beta < 90)
-	{
-		output = true;
+int getEC(){
+	int ECvalue=nMotorEncoder[motorA]%FULL_ROTATION_EC;
+	//displayString(1,"%f",ECvalue);
+	if(ECvalue<0){
+		ECvalue+=FULL_ROTATION_EC;
 	}
-	return output;
+	//displayString(2,"%f",ECvalue);
+	return ECvalue;
 }
 
-bool areAnglesValid(float alpha, float beta)
-{
-	// Author: Dustin Hu
-	// date: November 20th, 2016
-	// Purpose: To validate the angle set
-	// Input: The angle set to validate
-	// Note: Theta doesn't need to be valid because all thetas are valid
-	// The base can rotate to any angle
-	bool output = false;
-	if (isAlphaValid(alpha) && isBetaValid(beta))
-	{
-		output = true;
-	}
-	return output;
-}
-
-void moveJ2(AngleSet& input)
-{
-	// Author: Dustin Hu
-	// Date: November 20th, 2016
-	// Purpose: To move the second joint to the desired angle
-	// Input: The angle set to move to
-	// It is assumed that the angleSet is valid
-	setServoPosition(S4, 1, 0.0014 * input.alpha * input.alpha + 1.5288 * input.alpha - 173.79);
-}
-void moveJ3(AngleSet& input)
-{
-	// Author: Dustin Hu
-	// date: November 20, 2016
-	// Purpose: To move the 3rd joint
-	// It is assumed that the angle set is valid
-	setServoPosition(S4, 2, -0.00001 * pow(input.beta, 3)
-	-0.0015 * input.beta * input.beta
-	+ 0.9472 * input.beta
-	+ 25);
-
-}
-
-float radToDeg(float rad)
-{
-	return rad * (180.0/PI);
-}
-
-int getECValue()
-{
-	return nMotorEncoder[J1];
-}
-
-int getDistance()
-{
-	return SensorValue[S_ULTRA];
-}
-
-float angleToEC(float angle)
-{
-	return angle * FULL_ROTATION_EC_VALUE - getECValue();
-}
-
-void zeroECValue()
-{
-	nmotorEncoder[J1] = 0;
-}
-
-void rotate(bool clockwise, int power)
-{
-	if (!clockwise)
-	power = -1 * power;
-	motor[J1] = power;
-}
-
-//Version----2
 int smoothMotionFunc(float index0, int MAXspeed0,int MINspeed0){
-	float percent=1/(1+pow(10,(2-4*index0));
-	int speed=1;
-	if(percent<1){
-		speed=(int)((MAXspeed0-MINspeed0)*percent)+MINspeed0;
-	}
-	return speed;
+	float percent=0;
+	if(index0>1){
+		percent=1;
+	}else
+		percent=1/(1+pow(10,(2-4*index0));
+	return ((int)((MAXspeed0-MINspeed0)*percent)+MINspeed0);
 	//y=1/(1+10^(2-4x))
 	//On theory accelerate 0-1 in 0-1
 	//and after x=1, y->1
@@ -247,101 +169,108 @@ int smoothMotionFunc(float index0, int MAXspeed0,int MINspeed0){
 
 int smoothMotion(int curECdif, int initialECDiff){
 	int MAXspeed=70,MINspeed=10;
-	float index=0, ANGLECHANGE=20;
+	float index=0, ANGLECHANGE=40;
 	//20 degree for changing speed
 	index=curECdif;
 	if(curECdif>initialECDiff/2.0){
 		index=initialECDiff-index;
 		//reverse at middle of the action to gain slow down in the end
 	}
-	index/=ANGLECHANGE;
+	index=index/(ANGLECHANGE*5);
+		//displayString(2,"%f",index);
 	return smoothMotionFunc(index, MAXspeed,MINspeed);
 }
-
-void moveToTarget(int targetEC, int tolerance)
+void moveJoint1(float ang)
 {
-	int moveSpeed = 0, angleDiff=0,initDiff=0;
-	bool cw = true;
-	if (targetEC > FULL_ROTATION_EC_VALUE/2.0)
-	{
-		cw= false;
-	}else{
-		targetEC+=FULL_ROTATION_EC_VALUE;
-	}
-
-	angleDiff= targetEC - getECValue();
-initDiff=angleDiff;
-
-	//MAXspeed depends on the rotation difference
-	while (angleDiff!=0)
-	{
-				angleDiff=targetEC-getECValue();
-		moveSpeed=20;
-		displayString(3,"%f",moveSpeed);
-		rotate(cw, moveSpeed);
-	}
-	rotate(false, 0);
+	int power=0;
+	if(ang<0)
+		ang+=360;
+	int targetEC = (int)(ang*FULL_ROTATION_EC/360.0);
+	int forward=1,cw=1;//1 f/ -1 b
+	//displayString(6,"%i",targetEC);
+	int diff=targetEC-getEC();
+	int initDiff=diff;
+		//displayString(7,"%i",getEC());
+		//wait1Msec(2000);
+	while(diff!=0){
+		forward=1;
+		cw=1;
+		if(abs(diff)>FULL_ROTATION_EC/2.0){
+			forward=-1;
+		}
+		if(diff>0){
+			cw=-1;
+		}
+			//displayString(7,"%i",getEC())
+			power=smoothMotion(fabs(initDiff-diff),fabs(initDiff));
+		motor[J1] = -1*power*cw*forward;
+  	diff=targetEC-getEC();
+  	//displayString(7,"%i",getEC());
+  	if(diff==0){
+  			motor[J1] = 0;
+  	}
+  }
+	motor[J1] = 0;
 }
-//----Version-1
-// int smoothMotion(int curECdif, int initialECDiff){
-// 	int MAXspeed=70,MINspeed=10;
-// 	float DOMAINWIDTH=6.4, index=0;
-// 	if(curECdif<initialECDiff/2.0){
-// 		index=curECdif*2.0/FULL_ROTATION_EC_VALUE*DOMAINWIDTH;
-// 	}else{
-// 		index=DOMAINWIDTH+(curECdif-initialECDiff)*2.0/FULL_ROTATION_EC_VALUE*DOMAINWIDTH;
-// 	}
-// 	return smoothMotionFunc(index, MAXspeed,MINspeed);
-// }
-// int smoothMotionFunc(float index0to6d4, int MAXspeed0,int MINspeed0){
-// 	float percent=1/(1+pow(10,(index0to6d4-0.4)*(index0to6d4-6)));
-// 	return (int)((MAXspeed0-MINspeed0)*percent)+MINspeed0;
-// 	//y=1/(1+10^(x-0.4)(x-6))
-// 	//On theory accelerate to max in 20 degree
-// }
 
-//void moveToTarget(int targetEC, int tolerance)
-//{
-//	int moveSpeed = 75;
-//	// PD & Sigmoid here
-//	bool cw = true;
-//	if (targetEC > FULL_ROTATION_EC_VALUE/2.0)
-//	{
-//		cw= false;
-//		targetEC = FULL_ROTATION_EC_VALUE/2.0	- targetEC;
-//	}
-//	rotate(cw, moveSpeed);
+void moveJoint2(float ang)
+{
+	// AUthor: DUstin Hu
+	// Date: November 24th 2016
+	// Purpose: To move the second joint. 
+	// Input: Angle between 60 and 150 degrees
+	// Reasoning behind the quadratic: The servos don't seem to operate linearly. The motors don't help.
+	// I'm guessing torque and gravity. Not sure. Will put method of obtaining it on report.
+	setServoPosition(S_SERVO, J2, 0.0014*ang*ang +1.5288*ang - 173.79 );   // QUAD: 0.0014*ang*ang +1.5288*ang - 173.79
+}
 
-//	//while ((fabs(getECValue()) - fabs(targetEC)) <= tolerance);
-//	//rotate(false, 0);
-//	//rotate (!cw,moveSpeed/2);
-//	while ((fabs(getECValue()) - fabs(targetEC)) <= tolerance);
-//	rotate(false, 0);
-//}
+void moveJoint3(float ang)
+{
+		// AUthor: DUstin Hu	
+	// Date: November 24th 2016
+	// Purpose: To move the second joint. 
+	// Input: Angle between 60 and 150 degrees
+	// Reasoning behind the quadratic: The servos don't seem to operate linearly. The motors don't help.
+	// I'm guessing torque and gravity. Not sure. Will put method of obtaining it on report.
+	setServoPosition(S_SERVO, J3, -0.0007*ang*ang + 0.9882*ang + 21.773); // -0.0007*ang*ang + 0.9882*ang + 21.773
+}
+
+void moveRobot(AngleSet & a0)
+{
+	// AUthor: Dustin Hu
+	// Date: November 24th 2016
+	// Purpose: To move the whole robot
+	// Input: the angle set to move to
+	moveJoint2(a0.alpha);
+	moveJoint3(a0.beta);
+	moveJoint1(a0.theta);
+}
+
+//zeroing
 void zeroZAxis()
 {
 	float minDist = 255;
 	int targetEC = 0;
-	int tolerance = 0;
-	int power = 40;
+	int power = 30;
 	int currentEC = 0;
 	int distSum = 0;
 	int distAvg = 0;
 
-	zeroECValue();
-	rotate (true, power);
-	while (getECValue() <= FULL_ROTATION_EC_VALUE)
+	moveJoint2(120);
+	moveJoint3(-70);
+	nMotorEncoder[J1]=0;
+	motor[J1]=power;
+	while (nMotorEncoder[J1] < FULL_ROTATION_EC)
 	{
 		distSum = 0;
-		currentEC = getECValue();
+		currentEC = nMotorEncoder[J1];
 		int n = 1;
-		//Calculates avg. of distances it reads on the span of 1 EC
-		//This minimizes the error in readings from the U.S. sensor
-		while (currentEC == getECValue ()){
-			distSum += getDistance();
+		//Calculates avg. of distances it reads on the span of 1 Degree
+		while (fabs(currentEC-nMotorEncoder[J1])<=GEAR_REDUCTION ){
+			distSum += SensorValue[S_ULTRA];
 			n++;
 		}
-		distAvg = distSum*1.0/n;
+		distAvg=distSum*1.0/n;
 		if (distAvg < minDist)
 		{
 			minDist = distAvg;
@@ -349,118 +278,30 @@ void zeroZAxis()
 			displayString(7,"Found %f",targetEC);
 		}
 	}
-	rotate (true, 0);
-	moveToTarget(targetEC, tolerance);
-	zeroECValue();
+	motor[J1]=0;
+	//displayString(6,"Current %f",getEC());
+	//wait1Msec(2000);
+	moveJoint1(targetEC*1.0/GEAR_REDUCTION);
+	nMotorEncoder[J1]=0;
 }
 
-void gripperController(int angle){	//0 closed, 180 open
+
+void gripperController(int angle){
 	if (angle>=0||angle<=180)
-	setServoPosition (S_SERVO, GRIPPER, angle);
+		setServoPosition(S_SERVO, GRIPPER, angle)
+}
+void gripperBalls(){
+	//nxtDisplayCenteredTextLine(3, "%f",SensorValue[S2] );
+	if(SensorValue[S_COLOR]==nothing||SensorValue[S_TOUCH]==1)
+		gripperController(90);
+	else{
+		gripperController(20);
+	}
 }
 
-//void zeroZAxis()
-//{
-//	float minDist = 255;
-//	int targetEC = 0;
-//	int tolerance = 0;
-//	int power = 40;
 
-//	zeroECValue();
-//	rotate (true, power);
-//	while (getECValue() <= FULL_ROTATION_EC_VALUE)
-//	{
-//		if (getDistance() < minDist)
-//		{
-//			minDist = getDistance();
-//			targetEC = getECValue();
-//		}
-//	}
-//	rotate (true, 0);
-//	zeroECValue();
-//	moveToTarget(targetEC, tolerance);
-//	zeroECValue();
-//}
-
-//point validation
-bool isUpperOrLowerInRange(bool isAbove, float hyp, float x) {
-
-	bool isInRange = false;
-	if (isAbove)
-	{
-		if ((x >= 0 && hyp-SHOULDER*sin(PI/6.0) >= 0) || (x < 0 && hyp-SHOULDER*sin(PI/6.0) < 0))
-		isInRange = true;
-	}
-	else
-	{
-		if ((x >= 0 && hyp-SHOULDER*cos(PI/6.0) >= 0) || (x < 0 && hyp-SHOULDER*cos(PI/6.0) < 0))
-		isInRange = true;
-	}
-
-	return isInRange;
-
-
-}
-bool isPointValid(Point p)
+int map(int inputMin, int inputMax, int outputMin, int outputMax, int input)
 {
-	//Ali Toyserkani Nov 20
-	//Addition still needed, account for hitting itself within middle bound!!!!!!
-
-	const float lowerZBound = -(SHOULDER+FOREARM)*sin(PI/6.0);
-	const float upperZBound = (FOREARM+FOREARM)*cos(PI/6.0);
-
-	float distJ3ToPoint;
-	float distBetween = sqrt(pow(p.x,2)+pow(p.y,2)+pow(p.z,2));
-	float pythoXY = sqrt(p.x*p.x + p.y*p.y);
-	float pythoSHOULDERFOREARM = sqrt(SHOULDER*SHOULDER + FOREARM*FOREARM);
-
-	bool isOk = false;
-
-	if (p.z > lowerZBound && p.z < upperZBound)
-	{
-		//distBetween = sqrt(pow(p.x,2)+pow(p.y,2)+pow(p.z,2));
-		if (distBetween > pythoSHOULDERFOREARM && distBetween < (SHOULDER+FOREARM))
-		{
-			isOk = true;
-		}
-	}
-	else if (p.z < lowerZBound)
-	{
-		distJ3ToPoint = sqrt(pow(pythoXY-SHOULDER*cos(PI/6.0),2)+ pow(p.z-sin(PI/6.0),2));
-
-		if (isUpperOrLowerInRange(false,pythoXY, p.x))
-		{
-			if (distBetween > pythoSHOULDERFOREARM && distJ3ToPoint < FOREARM)
-			{
-				isOk = true;
-			}
-		}
-	}
-	else if (p.z > upperZBound)
-	{
-
-		distJ3ToPoint = sqrt(pow(pythoXY-SHOULDER*sin(PI/6.0),2)+ pow(p.z-cos(PI/6.0),2));
-
-		if (isUpperOrLowerInRange(true,pythoXY, p.x))
-		{
-			if (distBetween > pythoSHOULDERFOREARM && distJ3ToPoint < FOREARM)
-			{
-				isOk = true;
-			}
-		}
-	}
-	return isOk;
-}
-
-//read point
-void readPoint(TFileHandle & fin, Point p) {
-
-	readFloatPC(fin, p.x);
-	readFloatPC(fin, p.y);
-	readFloatPC(fin, p.z);
-	readIntPC(fin, p.tMs);
-	readIntPC(fin, p.gP);
-	bool currPointValid = isPointValid(p);
-	//bool currPointValid=true;
-	p.isValid = currPointValid;
+	//https://www.arduino.cc/en/Reference/Map
+	return (input - inputMin) * (outputMax - outputMin) / (inputMax - inputMin) + outputMin;
 }

@@ -24,6 +24,15 @@ bool isWithinRange (Point p0)
 
 float calcAlpha(Point & input, float distanceXY, float distancePlane)
 {
+	/*
+	Author: DUstin Hu
+	Date: November 20th 2016
+	Purpose: To calculate the angle relative to the vertical
+	Input: THe point to move to 
+			DistanceXY: The hypotenuse of the XY; base of the triangle formed with the XY Plane
+			DistancePlane: THe base of the triangle to calculate the angle with
+	Output: The angle in degrees
+	*/
 	float a1 = atan2(input.z,distanceXY);
 	float num = (FOREARM*FOREARM) - (SHOULDER*SHOULDER) - (distancePlane*distancePlane);
 	float denom = -2.0 * SHOULDER * distancePlane;
@@ -34,6 +43,15 @@ float calcAlpha(Point & input, float distanceXY, float distancePlane)
 
 float calcBeta(Point & input, float distancePlane)
 {
+	/*
+	Author: Dusti nHu
+	Date :Nvomebre 20th, 2016
+	Purpose: To calculate the angle beta 
+	Input: The input point, in xyz
+			The distance plane, which represents the distance from the tip of the gripper to the origin
+			Origin is at midponit of the servos
+	Output: The angle beta, which is +/-90 relative to the shoulder
+	*/
 	float num = (distancePlane*distancePlane) - (SHOULDER*SHOULDER) - (FOREARM*FOREARM);
 	float denom = -2.0*SHOULDER*FOREARM;
 
@@ -42,12 +60,25 @@ float calcBeta(Point & input, float distancePlane)
 
 float calcTheta(Point & input)
 {
+	/*
+	Author: DUstin HU
+	Dathe: November 20th 2016
+	Purpose: To calculate the angle theta, the angle on the XY plane
+	Input: The point to calculate with
+	OUtput: The angle theta
+	*/
+
 	return (180.0/PI)*(atan2(input.y,input.x));
 }
 
 
 void calcAngleSet(Point & inputP, AngleSet & outputA)
 {
+	/*
+	AUthor: Dustin Hu
+	Date: November 20th, 2016
+	Purpose: To calculate the set of angles
+	*/
 	float distXY = sqrt(inputP.x*inputP.x + inputP.y*inputP.y);
 	float distPlanar = sqrt(distXY*distXY + inputP.z*inputP.z);
 
@@ -184,16 +215,32 @@ void moveJoint1(float ang)
 
 void moveJoint2(float ang)
 {
+	// AUthor: DUstin Hu
+	// Date: November 24th 2016
+	// Purpose: To move the second joint. 
+	// Input: Angle between 60 and 150 degrees
+	// Reasoning behind the quadratic: The servos don't seem to operate linearly. The motors don't help.
+	// I'm guessing torque and gravity. Not sure. Will put method of obtaining it on report.
 	setServoPosition(S_SERVO, J2, 0.0014*ang*ang +1.5288*ang - 173.79 );   // QUAD: 0.0014*ang*ang +1.5288*ang - 173.79
 }
 
 void moveJoint3(float ang)
 {
+		// AUthor: DUstin Hu	
+	// Date: November 24th 2016
+	// Purpose: To move the second joint. 
+	// Input: Angle between 60 and 150 degrees
+	// Reasoning behind the quadratic: The servos don't seem to operate linearly. The motors don't help.
+	// I'm guessing torque and gravity. Not sure. Will put method of obtaining it on report.
 	setServoPosition(S_SERVO, J3, -0.0007*ang*ang + 0.9882*ang + 21.773); // -0.0007*ang*ang + 0.9882*ang + 21.773
 }
 
 void moveRobot(AngleSet & a0)
 {
+	// AUthor: Dustin Hu
+	// Date: November 24th 2016
+	// Purpose: To move the whole robot
+	// Input: the angle set to move to
 	moveJoint2(a0.alpha);
 	moveJoint3(a0.beta);
 	moveJoint1(a0.theta);
@@ -245,7 +292,7 @@ void gripperController(int angle){
 }
 void gripperBalls(){
 	//nxtDisplayCenteredTextLine(3, "%f",SensorValue[S2] );
-	if(SensorValue[S_ULTRA]==nothing||SensorValue[S_TOUCH]==1)
+	if(SensorValue[S_COLOR]==nothing||SensorValue[S_TOUCH]==1)
 		gripperController(90);
 	else{
 		gripperController(20);
