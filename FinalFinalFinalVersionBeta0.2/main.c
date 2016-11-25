@@ -20,6 +20,16 @@ void waitAndContinue(){
 	eraseDisplay();
 }
 
+task stopIfUnsafe()
+{
+	while (SensorValue[S_TOUCH] == 0)
+	{
+		EndTimeSlice();
+	}
+
+	stopAllTasks();
+}
+
 task main()
 {
 
@@ -29,6 +39,7 @@ task main()
 	SensorType[S_ULTRA] = sensorSONAR;
 	SensorType[S_SERVO] = sensorI2CCustom9V;
 
+  StartTask(stopIfUnsafe);
 	//Declare Variables
 	int QUANTITY;//from first line from input file
 	int pointer=0;

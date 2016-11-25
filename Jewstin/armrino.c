@@ -8,7 +8,7 @@ const int MAX_DIST = SHOULDER + FOREARM;
 const int ALPHA_MAX = 150;
 const int J3_PHYS_LIM = 90;
 const int ALPHA_MIN = 60;
-const int NUM_POINTS = 10;
+const int NUM_POINTS = 25;
 const int GEAR_REDUCTION = 5;
 const int FULL_ROTATION_EC = 360 * GEAR_REDUCTION;
 const int Basketball=2;
@@ -96,23 +96,28 @@ float min (float a, float b)
 float calcMaxBeta (AngleSet & a0)
 {
 	float beta = 180-a0.alpha;
-	displayString(0,"%0.2f", beta);
+//	displayString(0,"%0.2f", beta);
 	return min(beta, J3_PHYS_LIM);
 }
 
 bool anglesValid (AngleSet & a0)
 {
-	bool output = false;
+	bool output;
 	if (a0.alpha <=ALPHA_MAX && a0.alpha >= ALPHA_MIN)
 	{
 
 		if (!(a0.beta < calcMaxBeta(a0)))
 		{
+			eraseDisplay();
 		}
 		else
 		{
 			output = true;
 		}
+	}
+	else
+	{
+		output = false;
 	}
 	return output;
 }
@@ -122,11 +127,12 @@ bool isPointValid(Point & p0, AngleSet & a0)
 	//is point close enough to be able to be reached
 	//check z value above the grounnd isZValueValid fun
 	bool output = false;
+
 	if (isWithinRange (p0) && isZValueValid (p0))
 	{
 		calcAngleSet(p0,a0); // calculates all 3 angles
 
-		if (anglesValid (a0))
+		if (anglesValid (a0) == true)
 		{
 			output = true;
 		}
@@ -139,11 +145,11 @@ bool isPointValid(Point & p0, AngleSet & a0)
 }
 int getEC(){
 	int ECvalue=nMotorEncoder[motorA]%FULL_ROTATION_EC;
-	displayString(1,"%f",ECvalue);
+	//displayString(1,"%f",ECvalue);
 	if(ECvalue<0){
 		ECvalue+=FULL_ROTATION_EC;
 	}
-	displayString(2,"%f",ECvalue);
+//	displayString(2,"%f",ECvalue);
 	return ECvalue;
 }
 //Testing
@@ -171,7 +177,7 @@ int smoothMotion(int curECdif, int initialECDiff){
 		//reverse at middle of the action to gain slow down in the end
 	}
 	index=index/(ANGLECHANGE*5);
-		displayString(2,"%f",index);
+//		displayString(2,"%f",index);
 	return smoothMotionFunc(index, MAXspeed,MINspeed);
 }
 void moveJoint1(float ang)
@@ -216,11 +222,11 @@ void moveJoint1(float ang)
 	// might need to fix for going backwards direction
 	int targetEC = (int)(ang*FULL_ROTATION_EC/360.0);
 	int forward=1,cw=1;//1 f/ -1 b
-	displayString(6,"%i",targetEC);
+	//displayString(6,"%i",targetEC);
 	int diff=targetEC-getEC();
 	int initDiff=diff;
-		displayString(7,"%i",getEC());
-		wait1Msec(2000);
+	//	displayString(7,"%i",getEC());
+	//	wait1Msec(2000);
 	while(diff!=0){
 		forward=1;
 		cw=1;
@@ -230,11 +236,11 @@ void moveJoint1(float ang)
 		if(diff>0){
 			cw=-1;
 		}
-			displayString(7,"%i",getEC())
+			//displayString(7,"%i",getEC());
 			power=smoothMotion(fabs(initDiff-diff),fabs(initDiff));
 		motor[motorA] = -1*power*cw*forward;
   	diff=targetEC-getEC();
-  	displayString(7,"%i",getEC());
+  //	displayString(7,"%i",getEC());
   	if(diff==0){
   			motor[motorA] = 0;
   			//wait1Msec(200);
@@ -286,14 +292,14 @@ void moveRobot(AngleSet & a0)
 
 void gripperController(int angle){	//0 closed, 180 open
 	if (angle>=0||angle<=180)
-		setServoPosition(S4, 3, angle)
+		setServoPosition(S4, 3, angle);
 }
 void gripperBalls(){
 	//nxtDisplayCenteredTextLine(3, "%f",SensorValue[S2] );
 	if(SensorValue[S2]==nothing||SensorValue[S1]==1)
 		gripperController(90);
 	else{
-		gripperController(20);
+		gripperController(8);
 	}
 }
 
@@ -307,67 +313,19 @@ task main()
 	SensorType[S4] = sensorI2CCustom9V;
 
 	nMotorEncoder[motorA] = 0;
+	clearTimer(T1);
+
+	short amplitude = 45;
+	while (nNxtButtonPressed == -1);
+	displayString(0, "Button Pressed");
 	wait1Msec(1000);
-	TFileHandle fin;
-	bool isFileOk = openReadPC(fin,"testfile.txt");
-	if (!isFileOk)
+	clearTimer(T1);
+	while (nNxtButtonPressed == -1)
 	{
-		displayString(0,"youre fucked");
-		wait1Msec(5000);
+		displayString(1, "%d", time1[T1];
+		wait1Msec(100);
 	}
-	else {
+	displayString(0, "Button pressed");
 
-		Point listPoints[NUM_POINTS];
-		AngleSet listAngles[NUM_POINTS];
-
-		for (int i = 0; i < NUM_POINTS; i++)
-		{
-			// account for (0,0,0) case
-			listPoints[i].x = 1;
-			listPoints[i].y = 1;
-			listPoints[i].z = 1;
-			listPoints[i].gP = 0;
-			listPoints[i].isValid = false;
-			listAngles[i].alpha = 0;
-			listAngles[i].beta = 0;
-			listAngles[i].theta = 0;
-		}
-
-		for (int i = 0; i < NUM_POINTS; i++)
-		{
-			readPoint(fin,listPoints[i]);
-		}
-
-		for (int i = 0; i < NUM_POINTS; i++)
-		{
-			listPoints[i].isValid = isPointValid(listPoints[i],listAngles[i]);
-		}
-		for (int i = 0; i < 5; i++)
-		{
-			if (listPoints[i].isValid)
-			{
-				//moveJoint2(90);
-				//moveJoint3(0);
-				//wait1Msec(1000);
-				moveRobot(listAngles[i]);
-				displayString(0,"X %d", listPoints[i].x);
-				displayString(1,"Y %d", listPoints[i].y);
-				displayString(2,"Z %d", listPoints[i].z);
-				displayString(3,"Alpha %d", listAngles[i].alpha);
-				displayString(4,"Beta %d", listAngles[i].beta);
-				displayString(5,"Theta %d", listAngles[i].theta);
-				wait1Msec(3000);
-			}
-			else{
-				displayString(0, "Invalid");
-				wait1Msec(5000);
-			}
-		}
-	}
-	while (true)
-	{
-		gripperBalls();
-		wait1Msec(1000);
-	}
-
+	wait1Msec(1000);
 }
