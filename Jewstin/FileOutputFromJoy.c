@@ -10,12 +10,12 @@ typedef struct
 	int j2Ang;
 	int j3Ang;
 	int gPAng;
-
+	
 } JoyStickInfo;
 
 void outputValuesToFile(TFileHandle & out, JoyStickInfo & j)
 {
-	writeLongPC(out, j.j1Ec);
+	writeLongPC(out, j.j1Ec); 
 	writeTextPC(out, "  ");
 	writeLongPC(out, j.j1Speed);
 	writeTextPC(out, "  ");
@@ -31,21 +31,26 @@ void outputValuesToFile(TFileHandle & out, JoyStickInfo & j)
 void moveWithJoystick(float & xValue, float & zValue)
 {
 	getJoystickSettings(joystick);
-
+	
 	// Joint 1
-
-	motor[motorA] = (int)(joystick.joy1_x1/128.0 * 70);
-
+	
+	motor[motorA] = (int)(joystick.joy2_x1/128.0 * 70);
+	
 	// Joint 2 and 3 (change dist , newX and z to move in plane) use some waiting to actually read in
-
+	
 	xValue += (joystick.joy1_x1/128.0 * 10);
 	zValue += (joystick.joy1_y1/128.0 * 10 * -1);
-
+	
 	// following will be replaced with calcAngleSet function once merged
-
+	
 	float dist = sqrt(xValue*xValue + zValue*zValue);
-
-
+	
+	float alpha = (180/PI) * (atan2(zValue,xValue) + acos((197*197 - 157*157 - dist*dist)/(-2.0*157*dist)) + PI/2);
+	float beta = (180/PI) * (acos((dist*dist - 197*197 - 157*157)/(-2.0*157*197)) - PI);
+	
+	setServoPosition(S4, 1, 0.0014*alpha*alpha +1.5288*alpha - 173.79 );
+	setServoPosition(S4, 2, -0.0007*beta*beta + 0.9882*beta + 21.773); 
+		
 }
 
 task main()
@@ -53,11 +58,11 @@ task main()
 	//a boolean will trigger this code if the user wants to use the joystick feature
 	// there will be another feature for doing the last joystick task again
 	bool isRunning = true;
-
+	
 	TFileHandle fout;
 	word fileSize = 10000;
 	bool fileOK = openWritePC(fout,"angleValues.txt",fileSize);
-
+	
 	if (!fileOK)
 	{
 		displayString(0,"Error");
@@ -68,12 +73,12 @@ task main()
 	joy.j2Ang = 0;
 	joy.j3Ang = 0;
 	joy.gPAng = 0;
-
+	
 	setServoPosition(S4,1,0);
 	setServoPosition(S4,2,0);
 	float xPlane = 306.6;
 	float zPlane = 177.0;
-
+	
 	//int j2Angle = 0;
 	//int j3Angle = 0;
 	//int j1Encoder = 0;
@@ -81,19 +86,19 @@ task main()
 	//int gripperAngle = 0;
 
 	// during joystick movement, every 0.2 seconds, save data to file
-
+	
 	time1[T1] = 0;
-
-	while(isRunning && fileOK)
+	
+	while(isRunning && fileOK) 
 	{
 		// move the the robot joints using joystick;
 		moveWithJoystick(xPlane, zPlane);
-
+		
 		if (time1[T1] % 15 > 12 || time1[T1] % 15 < 2)
 		{
 			outputValuesToFile(fout, joy);
 			// saving every 15 ms
 		}
-
+		
 	}
 }
