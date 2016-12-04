@@ -113,7 +113,7 @@ bool isPointValid(Point & p0, AngleSet & a0)
 	return output;
 }
 
-//GetEC() return absolute position angles [0-360] of Joint1
+//GetEC() return absolute position Encoder Value [0-360*5] of Joint1 relative to 0 position
 int getEC(){
 	int ECvalue=nMotorEncoder[motorA]%FULL_ROTATION_EC;
 	//displayString(1,"%f",ECvalue);
