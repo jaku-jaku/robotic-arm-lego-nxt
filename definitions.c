@@ -140,7 +140,7 @@ int smoothMotionFunc(float index0, int MAXspeed0,int MINspeed0){
 int smoothMotion(int curECdif, int initialECDiff){
 	int MAXspeed=70,MINspeed=10;
 	float index=0, ANGLECHANGE=40;
-	//20 degree for changing speed
+	//40 degree for changing speed
 	index=curECdif;
 	if(curECdif>initialECDiff/2.0){
 		index=initialECDiff-index;
