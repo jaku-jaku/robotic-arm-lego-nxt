@@ -74,6 +74,7 @@ void readPoint(TFileHandle & in, Point & p0); //Main Author(s): Ali
 bool isZValueValid (Point p0); //Main Author(s): Dustin
 bool isWithinRange (Point p0); //Main Author(s): Dustin, Ali, Oswaldo
 bool isPointValid(Point & p0, AngleSet & a0); //Main Author(s): Dustin, Ali, Oswaldo
+bool anglesValid (AngleSet & a0);//Main Author(s): Dustin
 //AngleCalculation
 float calcAlpha(Point & input, float distanceXY, float distancePlane); //Main Author(s): Dustin
 float calcBeta(Point & input, float distancePlane);//Main Author(s): Dustin
@@ -81,8 +82,8 @@ float calcTheta(Point & input);//Main Author(s): Dustin
 void calcAngleSet(Point & inputP, AngleSet & outputA);//Main Author(s): Dustin
 float min (float a, float b);//Main Author(s): Dustin
 float calcMaxBeta (AngleSet & a0);//Main Author(s): Dustin
-bool anglesValid (AngleSet & a0);//Main Author(s): Dustin
 int getEC();//Main Author(s): Jack, Oswaldo
+void zeroZAxis();//Main Author(s): Oswaldo, Jack
 int smoothMotionFunc(float index0, int MAXspeed0,int MINspeed0);//Main Author(s): Jack
 int smoothMotion(int curECdif, int initialECDiff);//Main Author(s): Jack
 void moveJoint1(float ang);//Main Author(s): Dustin
@@ -91,6 +92,8 @@ void moveJoint3(float ang);//Main Author(s): Dustin
 void moveRobot(AngleSet & a0);//Main Author(s): Dustin
 void gripperController(int angle);//Main Author(s): Jack
 void gripperBalls();//Main Author(s): Jack
+//controller mapping
+int map(int inputMin, int inputMax, int outputMin, int outputMax, int input);
 //NOTES: ABOVE MAIN AUTHORS ARE ONLY MEANT THAT THE PERSON WHO IS(ARE) MAIN LEAD(S) OR MAIN CONTRIBUTOR(S).
 // 	 EVERYONE(JACK, ALI, DUSTIN, OSWALDO) IN THE TEAM DESIGNED, DISCUSSED, CONTRIBUTED,
 //	 AND FULLY UNDERSTAND EACH FUNCTION AND CLASS
