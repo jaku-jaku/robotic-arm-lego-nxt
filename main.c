@@ -19,7 +19,9 @@ TEAM JADO - MTE100 && GENE Final Project
 ||
 |+------------------------------------------------------------------------------
 ||
-||        	Purpose:  [Main class description]
+||        	Purpose:  THIS CLASS AIM TO PERFORM AS AN INDUSTRIAL ROBOT ARM
+|| 			  DESIGN, WITH STRONG FOCUS ON PERFORMANCE, ACCURACY, AND 
+||			  SAFETY.
 ||
 ||    	 Interfaces:    1. Auto-Calibration
 || 			2. Beeping sound and voice feedback for user
