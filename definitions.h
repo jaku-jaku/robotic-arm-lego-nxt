@@ -1,5 +1,5 @@
 
-//PORT I/O assigning
+//PORT I/O 
 const int S_COLOR = S2;
 const int S_ULTRA = S3;
 const int S_TOUCH = S1;
@@ -31,9 +31,9 @@ typedef struct
 	float x;
 	float y;
 	float z;
-	int tMsDelay;
-	int gP;//Gripper Position
-	bool isValid;
+	int tMsDelay;	//Timer Delay Ms
+	int gP;		//Gripper Position
+	bool isValid;	
 } Point;
 
 typedef struct
