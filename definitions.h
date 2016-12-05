@@ -1,3 +1,25 @@
+/*+-----------------------------------------------------------------------------
+
+ROBOTIC ARM
+---------------
+TEAM JADO - MTE100 && GENE Final Project
+
+|+------------------------------------------------------------------------------
+||
+||           	Team:  		JADO   #51
+||
+||         	Author:   Jack(Jianxiang) Xu
+||			  Ali Toyserkani
+||			  Dustin Hu
+|| 			  Oswaldo Ferro Hernandez
+||
+||        	Project:  Robotic Arm
+||
+||	    Description:  This header file contains all the functions for developers
+||
+|+------------------------------------------------------------------------------
+
+++------------------------------------------------------------------------------*/
 
 //PORT I/O 
 const int S_COLOR = S2;
@@ -47,25 +69,28 @@ typedef struct
 } AngleSet;
 
 //FileIO
-void readPoint(TFileHandle & in, Point & p0);
+void readPoint(TFileHandle & in, Point & p0); //Main Author(s): Ali
 //AngleValidation
-bool isZValueValid (Point p0);
-bool isWithinRange (Point p0);
-bool isPointValid(Point & p0, AngleSet & a0);
+bool isZValueValid (Point p0); //Main Author(s): Dustin
+bool isWithinRange (Point p0); //Main Author(s): Dustin, Ali, Oswaldo
+bool isPointValid(Point & p0, AngleSet & a0); //Main Author(s): Dustin, Ali, Oswaldo
 //AngleCalculation
-float calcAlpha(Point & input, float distanceXY, float distancePlane);
-float calcBeta(Point & input, float distancePlane);
-float calcTheta(Point & input);
-void calcAngleSet(Point & inputP, AngleSet & outputA);
-float min (float a, float b);
-float calcMaxBeta (AngleSet & a0);
-bool anglesValid (AngleSet & a0);
-int getEC();
-int smoothMotionFunc(float index0, int MAXspeed0,int MINspeed0);
-int smoothMotion(int curECdif, int initialECDiff);
-void moveJoint1(float ang);
-void moveJoint2(float ang);
-void moveJoint3(float ang);
-void moveRobot(AngleSet & a0);
-void gripperController(int angle);
-void gripperBalls();
+float calcAlpha(Point & input, float distanceXY, float distancePlane); //Main Author(s): Dustin
+float calcBeta(Point & input, float distancePlane);//Main Author(s): Dustin
+float calcTheta(Point & input);//Main Author(s): Dustin
+void calcAngleSet(Point & inputP, AngleSet & outputA);//Main Author(s): Dustin
+float min (float a, float b);//Main Author(s): Dustin
+float calcMaxBeta (AngleSet & a0);//Main Author(s): Dustin
+bool anglesValid (AngleSet & a0);//Main Author(s): Dustin
+int getEC();//Main Author(s): Jack, Oswaldo
+int smoothMotionFunc(float index0, int MAXspeed0,int MINspeed0);//Main Author(s): Jack
+int smoothMotion(int curECdif, int initialECDiff);//Main Author(s): Jack
+void moveJoint1(float ang);//Main Author(s): Dustin
+void moveJoint2(float ang);//Main Author(s): Dustin
+void moveJoint3(float ang);//Main Author(s): Dustin
+void moveRobot(AngleSet & a0);//Main Author(s): Dustin
+void gripperController(int angle);//Main Author(s): Jack
+void gripperBalls();//Main Author(s): Jack
+//NOTES: ABOVE MAIN AUTHORS ARE ONLY MEANT THAT THE PERSON WHO IS(ARE) MAIN LEAD(S) OR MAIN CONTRIBUTOR(S).
+// 	 EVERYONE(JACK, ALI, DUSTIN, OSWALDO) IN THE TEAM DESIGNED, DISCUSSED, CONTRIBUTED,
+//	 AND FULLY UNDERSTAND EACH FUNCTION AND CLASS
