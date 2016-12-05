@@ -15,8 +15,6 @@ TEAM JADO - MTE100 && GENE Final Project
 ||
 ||        	Project:  Robotic Arm
 ||
-||	 	 	Description:  ROBOTC
-||
 |+------------------------------------------------------------------------------
 ||
 ||        	Purpose:  THIS CLASS AIM TO PERFORM AS AN INDUSTRIAL ROBOT ARM
