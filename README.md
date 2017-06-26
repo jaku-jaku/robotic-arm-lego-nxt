@@ -1,2 +1,2 @@
 # RoboticArm_JADO
-Final project using lego to build Robotic Arm and base platform in 3 weeks
+Built a robotic arm and planetary gearbox system in 3 weeks to handle repetative tasks through joyystick training.
